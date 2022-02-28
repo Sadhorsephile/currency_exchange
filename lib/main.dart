@@ -1,3 +1,4 @@
+import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -9,9 +10,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Currency Exchange',
-      home: Container(),
+      home: MainScreen(),
     );
   }
 }
