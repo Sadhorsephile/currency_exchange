@@ -3,8 +3,11 @@ import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/cupertino.dart';
 
-MainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext context) => MainScreenWidgetModel(MainScreenModel());
+/// Фабрика виджет-модели главного экрана
+MainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext context) =>
+    MainScreenWidgetModel(MainScreenModel());
 
+/// Виджет-модель главного экрана
 class MainScreenWidgetModel extends WidgetModel<MainScreen, MainScreenModel> {
-MainScreenWidgetModel(MainScreenModel model) : super(model);
+  MainScreenWidgetModel(MainScreenModel model) : super(model);
 }
