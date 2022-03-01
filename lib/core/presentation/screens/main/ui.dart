@@ -84,7 +84,7 @@ class _CurrencyTextBox extends StatelessWidget {
     return EntityStateNotifierBuilder<CurrencyTextFieldDto>(
       listenableEntityState: textFieldState,
       loadingBuilder: (_, __) => _CurrencyTextBoxContent.loading(),
-      builder: (_, state) => _CurrencyTextBoxContent.normal(
+      builder: (_, state) => _CurrencyTextBoxContent.data(
         state: state,
         inputFormatter: inputFormatter,
         hint: hint,
@@ -116,7 +116,8 @@ class _CurrencyTextBoxContent extends StatelessWidget {
     this.state,
   }) : super(key: key);
 
-  factory _CurrencyTextBoxContent.normal({
+  /// Текстовое поле с валютой, доступное для редактирования
+  factory _CurrencyTextBoxContent.data({
     required TextInputFormatter inputFormatter,
     CurrencyTextFieldDto? state,
     String? hint,
@@ -128,9 +129,11 @@ class _CurrencyTextBoxContent extends StatelessWidget {
         inputFormatter: inputFormatter,
       );
 
+  /// Текстовое поле с валютой, не доступное для редактирования. Находится в состоянии загрузки
   factory _CurrencyTextBoxContent.loading() =>
       const _CurrencyTextBoxContent(isLoading: true);
 
+  /// Текстовое поле с валютой, доступное для редактирования. В поле отображается ошибка [errorMessage]
   factory _CurrencyTextBoxContent.error({
     required TextInputFormatter inputFormatter,
     required String errorMessage,
