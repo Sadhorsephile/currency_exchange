@@ -1,4 +1,7 @@
+import 'package:currency_exchange/core/presentation/screens/main/data.dart';
+import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
+import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +18,7 @@ IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
 class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Контроллер текстового поля списания
   final TextEditingController _debitController;
+
   /// Контроллер текстового поля зачисления
   final TextEditingController _creditController;
 
@@ -49,79 +53,92 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
         ),
       );
 
+  /// Флаг, символизирующий, заблокированы ли для обработчиков-слушателей контроллеры
+  bool _isControllersLocked = false;
+
   MainScreenWidgetModel(
     MainScreenModel model,
     this._debitController,
     this._creditController,
   ) : super(model) {
-    _debitStateNotifier.content(CurrencyTextFieldDto(_debitController, '₽'));
-    _creditStateNotifier.content(CurrencyTextFieldDto(_creditController, r'$'));
+    _subscribeControllerListeners();
+    _init();
+  }
+
+  @override
+  void onRetryPressed() {
+    _init();
+  }
+
+  /// Метод подписки слушателей на контроллер
+  void _subscribeControllerListeners() {
+    _creditController.addListener(_onCreditChange);
+    _debitController.addListener(_onDebitChange);
+  }
+
+  /// Метод инциализации данных, необходимых для функционирования экрана
+  void _init() {
+    _creditStateNotifier.loading();
+    _debitStateNotifier.loading();
+
+    model.loadData().then((_) {
+      _creditStateNotifier
+          .content(CurrencyTextFieldDto(_creditController, r'$'));
+      _debitStateNotifier.content(CurrencyTextFieldDto(_debitController, '₽'));
+    });
+  }
+
+  /// Метод, обновляющий содержимое поля зачисления в ответ на изменение содержимого поля списания
+  void _onDebitChange() {
+    if (_isControllersLocked) return;
+
+    _debitController.validateDecimalNumber();
+    final debit = _debitController.text.toDoubleOrNull;
+    if (debit == null) return;
+    _modifyWithoutListenerTriggers(
+      () => _creditController.setDoubleValue(model.fromDebitToCredit(debit)),
+    );
+  }
+
+  /// Метод, обновляющий содержимое поля зачисления в ответ на изменение содержимого поля списания
+  void _onCreditChange() {
+    if (_isControllersLocked) return;
+
+    _creditController.validateDecimalNumber();
+    final credit = _creditController.text.toDoubleOrNull;
+    if (credit == null) return;
+    _modifyWithoutListenerTriggers(
+      () => _debitController.setDoubleValue(model.fromCreditToDebit(credit)),
+    );
+  }
+
+  /// Метод, позволяющий выполнять модификацию значений контроллера, не вызывая
+  /// реакции слушателей модифицируемого контроллера путем установки соответствующего флага
+  void _modifyWithoutListenerTriggers(VoidCallback modify) {
+    _isControllersLocked = true;
+    modify();
+    _isControllersLocked = false;
   }
 }
 
 /// Интерфейс виджет-модели
-abstract class IMainScreenWidgetModel extends WidgetModel {
+abstract class IMainScreenWidgetModel
+    extends WidgetModel<MainScreen, MainScreenModel> {
   /// Источник состояния текстового поля списания
   ListenableState<EntityState<CurrencyTextFieldDto>> get debitTextFieldState;
+
   /// Источник состояния текстового поля зачисления
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState;
+
   /// Текущее состояние ориентации устройства
   Orientation get orientation;
   UiElementsProperties get uiElementsProperties;
+
   /// Форматтер для поля ввода количества валюты (позволяет вводить только числа и знак разделения '.')
   TextInputFormatter get inputFormatter =>
       FilteringTextInputFormatter.allow(RegExp(r'[\d\.]'));
 
-  IMainScreenWidgetModel(ElementaryModel model) : super(model);
-}
+  IMainScreenWidgetModel(MainScreenModel model) : super(model);
 
-/// Дата-класс, держащий в себе данные о валюте и ее введенном количестве
-class CurrencyTextFieldDto {
-  final TextEditingController controller;
-  final String currencySymbol;
-
-  CurrencyTextFieldDto(this.controller, this.currencySymbol);
-}
-
-/// Набор значений, задающих свойство ui-элементов
-class UiElementsProperties {
-  /// Текст шапки страницы
-  final String appBarTitle;
-  /// Хинт текстового поля списания
-  final String debitHint;
-  /// Хинт текстового поля зачисления
-  final String creditHint;
-  /// Значение горизонтального отступа
-  final double horizontalPadding;
-  /// Значение вертикального отступа
-  final double verticalPadding;
-  /// Значение отступа между элементами
-  final double spacing;
-  /// Цвет заднего фона экрана
-  final Color backgroundColor;
-  /// Конфигурация внешнего вида текстового поля
-  final InputDecoration textFieldDecoration;
-  /// Цвет текста ошибки
-  final Color errorTextColor;
-  /// Цвет иконки повтора запроса
-  final Color refreshIconColor;
-  /// Базовый цвет шиммера
-  final Color shimmerBaseColor;
-  /// Цвет подсветки шиммера
-  final Color shimmerHighlightColor;
-  
-  UiElementsProperties({
-    required this.appBarTitle,
-    required this.debitHint,
-    required this.creditHint,
-    required this.horizontalPadding,
-    required this.verticalPadding,
-    required this.spacing,
-    required this.backgroundColor,
-    required this.textFieldDecoration,
-    required this.errorTextColor,
-    required this.refreshIconColor,
-    required this.shimmerBaseColor,
-    required this.shimmerHighlightColor,
-  });
+  void onRetryPressed();
 }

@@ -1,3 +1,4 @@
+import 'package:currency_exchange/core/presentation/screens/main/data.dart';
 import 'package:currency_exchange/core/presentation/screens/main/wmodel.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
