@@ -5,6 +5,7 @@ class AppDictionary {
   static const mainScreenCreditHint = 'Зачисление';
   static const mainScreenDebitHint = 'Списание';
   static const mainScreenUnexpectedError = 'Произошла непредвиденная ошибка';
+  static const mainScreenSameCurrenciesSelectedWarning = 'Конвертация невозможна в идентичных валютах';
   static const mainScreenNoCacheError = 'Не удалось загрузить данные';
   static const mainScreenOnlyCacheAvailableError = 'Данные устарели';
 }

@@ -1,3 +1,4 @@
+import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
@@ -10,7 +11,7 @@ import 'package:flutter/services.dart';
 /// Фабрика виджет-модели главного экрана
 IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
     MainScreenWidgetModel(
-      MainScreenModel(),
+      MainScreenModel(MainScreenErrorHandler()),
       TextEditingController(),
       TextEditingController(),
     );
@@ -32,6 +33,9 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   @override
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState =>
       _creditStateNotifier;
+  @override
+  List<CurrencyInfoDto> get currencies =>
+      model.currencies.value.map((e) => e.toCurrencyInfoDto).toList();
 
   @override
   String get appBarTitle => AppDictionary.mainScreenAppBarTitle;
@@ -56,14 +60,69 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     MainScreenModel model,
     this._debitController,
     this._creditController,
-  ) : super(model) {
+  ) : super(model);
+
+  @override
+  void initWidgetModel() {
+    super.initWidgetModel();
     _subscribeControllerListeners();
     _init();
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _debitController
+      ..removeListener(_onDebitChange)
+      ..dispose();
+    _creditController
+      ..removeListener(_onCreditChange)
+      ..dispose();
+  }
+
+  @override
+  void onErrorHandle(Object error) {
+    _showSnackBarMessage(AppDictionary.mainScreenUnexpectedError);
+  }
+
+  @override
   void onRetryPressed() {
     _init();
+  }
+
+  @override
+  void onSelectDebit(CurrencyInfoDto currency) {
+    if (currency.code == model.currentCreditCurrency.code) {
+      _onSameCurrenciesSelect();
+      return;
+    }
+
+    _creditStateNotifier.loading();
+    _debitStateNotifier.content(CurrencyTextFieldDto(
+      _debitController,
+      currency.currencySymbol,
+    ));
+
+    model.switchDebitTo(currency.code).then((_) {
+      _creditStateNotifier
+          .content(CurrencyTextFieldDto(_creditController, r'$'));
+      _onDebitChange();
+    });
+  }
+
+  @override
+  void onSelectCredit(CurrencyInfoDto currency) {
+    if (currency.code == model.currentDebitCurrency.code) {
+      _onSameCurrenciesSelect();
+      return;
+    }
+
+    model.switchCreditTo(currency.code);
+    _creditStateNotifier.content(CurrencyTextFieldDto(
+      _creditController,
+      currency.currencySymbol,
+    ));
+    _onCreditChange();
   }
 
   /// Метод подписки слушателей на контроллер
@@ -91,7 +150,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     _debitController.validateDecimalNumber();
     final debit = _debitController.text.toDoubleOrNull;
     if (debit == null) return;
-    _modifyWithoutListenerTriggers(
+    _modifyWithoutListenersTrigger(
       () => _creditController.setDoubleValue(model.fromDebitToCredit(debit)),
     );
   }
@@ -103,17 +162,28 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     _creditController.validateDecimalNumber();
     final credit = _creditController.text.toDoubleOrNull;
     if (credit == null) return;
-    _modifyWithoutListenerTriggers(
+    _modifyWithoutListenersTrigger(
       () => _debitController.setDoubleValue(model.fromCreditToDebit(credit)),
     );
   }
 
   /// Метод, позволяющий выполнять модификацию значений контроллера, не вызывая
   /// реакции слушателей модифицируемого контроллера путем установки соответствующего флага
-  void _modifyWithoutListenerTriggers(VoidCallback modify) {
+  void _modifyWithoutListenersTrigger(VoidCallback modify) {
     _isControllersLocked = true;
     modify();
     _isControllersLocked = false;
+  }
+
+  /// Метод, отображающий снек-бар с предупреждением
+  void _onSameCurrenciesSelect() {
+    _showSnackBarMessage(AppDictionary.mainScreenSameCurrenciesSelectedWarning);
+  }
+
+  /// Метод, отображающий снек-бар с сообщением [message]
+  void _showSnackBarMessage(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 }
 
@@ -125,6 +195,9 @@ abstract class IMainScreenWidgetModel
 
   /// Источник состояния текстового поля зачисления
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState;
+
+  /// Источник данных о списках доступных для конвертации валют
+  List<CurrencyInfoDto> get currencies;
 
   /// Текст шапки страницы
   String get appBarTitle;
@@ -151,4 +224,10 @@ abstract class IMainScreenWidgetModel
 
   /// Метод, инициирующий перезагрузку данных на странице
   void onRetryPressed();
+
+  /// Метод, вызываемый в момент выбора валюты списания для конвертации
+  void onSelectDebit(CurrencyInfoDto currency);
+
+  /// Метод, вызываемый в момент выбора валюты зачисления для конвертации
+  void onSelectCredit(CurrencyInfoDto currency);
 }
