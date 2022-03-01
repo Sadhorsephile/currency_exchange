@@ -30,32 +30,30 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
           appBar: AppBar(title: Text(wm.appBarTitle)),
           backgroundColor: AppColors.mainScreenBackgroundColor,
           body: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: wm.horizontalPadding,
-                vertical: wm.verticalPadding,
-              ),
-              child: Column(
-                children: [
-                  SizedBox(height: wm.spacing),
-                  if (orientation == Orientation.portrait)
-                    Column(
-                      children: [
-                        debit,
-                        SizedBox(height: wm.spacing),
-                        credit,
-                      ],
-                    )
-                  else
-                    Row(
-                      children: [
-                        Expanded(child: debit),
-                        SizedBox(width: wm.spacing),
-                        Expanded(child: credit),
-                      ],
-                    ),
-                ],
-              ),
+            padding: EdgeInsets.symmetric(
+              horizontal: wm.horizontalPadding,
+              vertical: wm.verticalPadding,
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: wm.spacing),
+                if (orientation == Orientation.portrait)
+                  Column(
+                    children: [
+                      debit,
+                      SizedBox(height: wm.spacing),
+                      credit,
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(child: debit),
+                      SizedBox(width: wm.spacing),
+                      Expanded(child: credit),
+                    ],
+                  ),
+              ],
             ),
           ),
         );
