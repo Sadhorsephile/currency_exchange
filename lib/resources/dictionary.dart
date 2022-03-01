@@ -1,3 +1,4 @@
+/// Словарь приложения
 class AppDictionary {
   static const appName = 'Currency Exchange';
   static const mainScreenAppBarTitle = 'Currency Exchange';
