@@ -1,4 +1,5 @@
 import 'package:currency_exchange/core/presentation/screens/main/wmodel.dart';
+import 'package:currency_exchange/resources/colors.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,39 +11,36 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
 
   @override
   Widget build(IMainScreenWidgetModel wm) {
-    final uiProperties = wm.uiElementsProperties;
 
     final debit = _CurrencyTextBox(
       textFieldState: wm.debitTextFieldState,
-      uiProperties: uiProperties,
-      hint: uiProperties.debitHint,
+      hint: wm.debitHint,
       inputFormatter: wm.inputFormatter,
     );
 
     final credit = _CurrencyTextBox(
       textFieldState: wm.creditTextFieldState,
-      uiProperties: uiProperties,
-      hint: uiProperties.creditHint,
+      hint: wm.creditHint,
       inputFormatter: wm.inputFormatter,
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(uiProperties.appBarTitle)),
-      backgroundColor: uiProperties.backgroundColor,
+      appBar: AppBar(title: Text(wm.appBarTitle)),
+      backgroundColor: AppColors.mainScreenBackgroundColor,
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: uiProperties.horizontalPadding,
-            vertical: uiProperties.verticalPadding,
+            horizontal: wm.horizontalPadding,
+            vertical: wm.verticalPadding,
           ),
           child: Column(
             children: [
-              SizedBox(height: uiProperties.spacing),
+              SizedBox(height: wm.spacing),
               if (wm.orientation == Orientation.portrait)
                 Column(
                   children: [
                     debit,
-                    SizedBox(height: uiProperties.spacing),
+                    SizedBox(height: wm.spacing),
                     credit,
                   ],
                 )
@@ -50,7 +48,7 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
                 Row(
                   children: [
                     Expanded(child: debit),
-                    SizedBox(width: uiProperties.spacing),
+                    SizedBox(width: wm.spacing),
                     Expanded(child: credit),
                   ],
                 ),
@@ -65,14 +63,12 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
 /// Элемент, представляющий текстовое поле и кнопку переключения валюты
 class _CurrencyTextBox extends StatelessWidget {
   final ListenableState<EntityState<CurrencyTextFieldDto>> textFieldState;
-  final UiElementsProperties uiProperties;
   final TextInputFormatter inputFormatter;
   final String hint;
 
   const _CurrencyTextBox({
     required this.textFieldState,
     required this.hint,
-    required this.uiProperties,
     required this.inputFormatter,
     Key? key,
   }) : super(key: key);
@@ -104,7 +100,11 @@ class _CurrencyTextBox extends StatelessWidget {
           enabled: !isLoading,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [inputFormatter],
-          decoration: uiProperties.textFieldDecoration.copyWith(hintText: hint),
+          decoration: InputDecoration(
+            fillColor: Colors.white,
+            filled: true,
+            hintText: hint,
+          ),
         ),
         if (state?.currencySymbol != null)
           Positioned(
@@ -123,12 +123,13 @@ class _CurrencyTextBox extends StatelessWidget {
             children: [
               Text(
                 errorMessage,
-                style: TextStyle(color: uiProperties.errorTextColor),
+                style:
+                    const TextStyle(color: AppColors.mainScreenErrorTextColor),
               ),
-              SizedBox(width: uiProperties.spacing),
-              Icon(
+              const SizedBox(width: 5),
+              const Icon(
                 Icons.refresh,
-                color: uiProperties.refreshIconColor,
+                color: AppColors.refreshIconColor,
               ),
             ],
           ),
@@ -137,8 +138,8 @@ class _CurrencyTextBox extends StatelessWidget {
 
     return isLoading
         ? Shimmer.fromColors(
-            baseColor: uiProperties.shimmerBaseColor,
-            highlightColor: uiProperties.shimmerHighlightColor,
+            baseColor: AppColors.shimmerBaseColor,
+            highlightColor: AppColors.shimmerHighlightColor,
             child: body,
           )
         : body;

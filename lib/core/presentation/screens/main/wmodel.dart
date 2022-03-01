@@ -1,5 +1,4 @@
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
-import 'package:currency_exchange/resources/colors.dart';
 import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
@@ -34,23 +33,17 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   Orientation get orientation => MediaQuery.of(context).orientation;
 
   @override
-  UiElementsProperties get uiElementsProperties => UiElementsProperties(
-        appBarTitle: AppDictionary.mainScreenAppBarTitle,
-        debitHint: AppDictionary.mainScreenDebitHint,
-        creditHint: AppDictionary.mainScreenCreditHint,
-        horizontalPadding: 20.0,
-        verticalPadding: 10.0,
-        spacing: 10.0,
-        backgroundColor: AppColors.mainScreenBackgroundColor,
-        errorTextColor: AppColors.mainScreenErrorTextColor,
-        refreshIconColor: AppColors.refreshIconColor,
-        shimmerBaseColor: AppColors.shimmerBaseColor,
-        shimmerHighlightColor: AppColors.shimmerHighlightColor,
-        textFieldDecoration: const InputDecoration(
-          fillColor: Colors.white,
-          filled: true,
-        ),
-      );
+  String get appBarTitle => AppDictionary.mainScreenAppBarTitle;
+  @override
+  String get debitHint => AppDictionary.mainScreenDebitHint;
+  @override
+  String get creditHint => AppDictionary.mainScreenCreditHint;
+  @override
+  double get horizontalPadding => 20.0;
+  @override
+  double get verticalPadding => 10.0;
+  @override
+  double get spacing => 10.0;
 
   MainScreenWidgetModel(
     MainScreenModel model,
@@ -72,7 +65,24 @@ abstract class IMainScreenWidgetModel extends WidgetModel {
 
   /// Текущее состояние ориентации устройства
   Orientation get orientation;
-  UiElementsProperties get uiElementsProperties;
+
+  /// Текст шапки страницы
+  String get appBarTitle;
+
+  /// Хинт текстового поля списания
+  String get debitHint;
+
+  /// Хинт текстового поля зачисления
+  String get creditHint;
+
+  /// Значение горизонтального отступа
+  double get horizontalPadding;
+
+  /// Значение вертикального отступа
+  double get verticalPadding;
+
+  /// Значение отступа между элементами
+  double get spacing;
 
   /// Форматтер для поля ввода количества валюты (позволяет вводить только числа и знак разделения '.')
   TextInputFormatter get inputFormatter =>
@@ -87,58 +97,4 @@ class CurrencyTextFieldDto {
   final String currencySymbol;
 
   CurrencyTextFieldDto(this.controller, this.currencySymbol);
-}
-
-/// Набор значений, задающих свойство ui-элементов
-class UiElementsProperties {
-  /// Текст шапки страницы
-  final String appBarTitle;
-
-  /// Хинт текстового поля списания
-  final String debitHint;
-
-  /// Хинт текстового поля зачисления
-  final String creditHint;
-
-  /// Значение горизонтального отступа
-  final double horizontalPadding;
-
-  /// Значение вертикального отступа
-  final double verticalPadding;
-
-  /// Значение отступа между элементами
-  final double spacing;
-
-  /// Цвет заднего фона экрана
-  final Color backgroundColor;
-
-  /// Конфигурация внешнего вида текстового поля
-  final InputDecoration textFieldDecoration;
-
-  /// Цвет текста ошибки
-  final Color errorTextColor;
-
-  /// Цвет иконки повтора запроса
-  final Color refreshIconColor;
-
-  /// Базовый цвет шиммера
-  final Color shimmerBaseColor;
-
-  /// Цвет подсветки шиммера
-  final Color shimmerHighlightColor;
-
-  UiElementsProperties({
-    required this.appBarTitle,
-    required this.debitHint,
-    required this.creditHint,
-    required this.horizontalPadding,
-    required this.verticalPadding,
-    required this.spacing,
-    required this.backgroundColor,
-    required this.textFieldDecoration,
-    required this.errorTextColor,
-    required this.refreshIconColor,
-    required this.shimmerBaseColor,
-    required this.shimmerHighlightColor,
-  });
 }
