@@ -104,8 +104,12 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     ));
 
     model.switchDebitTo(currency.code).then((_) {
-      _creditStateNotifier
-          .content(CurrencyTextFieldDto(_creditController, r'$'));
+      _creditStateNotifier.content(
+        CurrencyTextFieldDto(
+          _creditController,
+          model.currentCreditCurrency.symbol,
+        ),
+      );
       _onDebitChange();
     });
   }
@@ -137,9 +141,14 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     _debitStateNotifier.loading();
 
     model.loadData().then((_) {
-      _creditStateNotifier
-          .content(CurrencyTextFieldDto(_creditController, r'$'));
-      _debitStateNotifier.content(CurrencyTextFieldDto(_debitController, '₽'));
+      _creditStateNotifier.content(CurrencyTextFieldDto(
+        _creditController,
+        model.currentCreditCurrency.symbol,
+      ));
+      _debitStateNotifier.content(CurrencyTextFieldDto(
+        _debitController,
+        model.currentDebitCurrency.symbol,
+      ));
     });
   }
 
