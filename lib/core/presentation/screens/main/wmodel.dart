@@ -1,4 +1,5 @@
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
+import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
@@ -91,10 +92,4 @@ abstract class IMainScreenWidgetModel extends WidgetModel {
   IMainScreenWidgetModel(ElementaryModel model) : super(model);
 }
 
-/// Дата-класс, держащий в себе данные о валюте и ее введенном количестве
-class CurrencyTextFieldDto {
-  final TextEditingController controller;
-  final String currencySymbol;
 
-  CurrencyTextFieldDto(this.controller, this.currencySymbol);
-}
