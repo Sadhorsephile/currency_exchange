@@ -17,6 +17,7 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
       uiProperties: uiProperties,
       hint: uiProperties.debitHint,
       inputFormatter: wm.inputFormatter,
+      onRefreshIconPressed: wm.onRetryPressed,
     );
 
     final credit = _CurrencyTextBox(
@@ -24,6 +25,7 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
       uiProperties: uiProperties,
       hint: uiProperties.creditHint,
       inputFormatter: wm.inputFormatter,
+      onRefreshIconPressed: wm.onRetryPressed,
     );
 
     return Scaffold(
@@ -67,6 +69,7 @@ class _CurrencyTextBox extends StatelessWidget {
   final ListenableState<EntityState<CurrencyTextFieldDto>> textFieldState;
   final UiElementsProperties uiProperties;
   final TextInputFormatter inputFormatter;
+  final VoidCallback onRefreshIconPressed;
   final String hint;
 
   const _CurrencyTextBox({
@@ -74,6 +77,7 @@ class _CurrencyTextBox extends StatelessWidget {
     required this.hint,
     required this.uiProperties,
     required this.inputFormatter,
+    required this.onRefreshIconPressed,
     Key? key,
   }) : super(key: key);
 
@@ -126,9 +130,12 @@ class _CurrencyTextBox extends StatelessWidget {
                 style: TextStyle(color: uiProperties.errorTextColor),
               ),
               SizedBox(width: uiProperties.spacing),
-              Icon(
-                Icons.refresh,
-                color: uiProperties.refreshIconColor,
+              GestureDetector(
+                onTap: onRefreshIconPressed,
+                child: Icon(
+                  Icons.refresh,
+                  color: uiProperties.refreshIconColor,
+                ),
               ),
             ],
           ),
