@@ -45,6 +45,9 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   double get verticalPadding => 10.0;
   @override
   double get spacing => 10.0;
+  @override
+  TextInputFormatter get inputFormatter =>
+      FilteringTextInputFormatter.allow(RegExp(r'[\d\.]'));
 
   /// Флаг, символизирующий, заблокированы ли для обработчиков-слушателей контроллеры
   bool _isControllersLocked = false;
@@ -142,8 +145,7 @@ abstract class IMainScreenWidgetModel
   double get spacing;
 
   /// Форматтер для поля ввода количества валюты (позволяет вводить только числа и знак разделения '.')
-  TextInputFormatter get inputFormatter =>
-      FilteringTextInputFormatter.allow(RegExp(r'[\d\.]'));
+  TextInputFormatter get inputFormatter;
 
   IMainScreenWidgetModel(MainScreenModel model) : super(model);
 
