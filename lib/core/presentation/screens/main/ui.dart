@@ -161,14 +161,12 @@ class _RoundCurrencyButton extends StatelessWidget {
         child: InkWell(
           onTap: () {},
           child: Container(
+            alignment: Alignment.center,
             width: 35,
             height: 35,
-            decoration: const BoxDecoration(shape: BoxShape.circle),
-            child: Center(
-              child: Text(
-                label,
-                style: const TextStyle(color: Colors.white),
-              ),
+            child: Text(
+              label,
+              style: const TextStyle(color: Colors.white),
             ),
           ),
         ),
