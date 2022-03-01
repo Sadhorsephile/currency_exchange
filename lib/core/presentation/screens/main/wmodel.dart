@@ -140,5 +140,6 @@ abstract class IMainScreenWidgetModel
 
   IMainScreenWidgetModel(MainScreenModel model) : super(model);
 
+  /// Метод, инициирующий перезагрузку данных на странице
   void onRetryPressed();
 }
