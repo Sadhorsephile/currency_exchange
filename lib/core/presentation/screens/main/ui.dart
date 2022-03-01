@@ -1,3 +1,4 @@
+import 'package:currency_exchange/core/presentation/screens/main/modal.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:currency_exchange/core/presentation/screens/main/wmodel.dart';
 import 'package:currency_exchange/resources/colors.dart';
@@ -181,7 +182,13 @@ class _CurrencyTextBoxContent extends StatelessWidget {
             padding: const EdgeInsets.all(5),
             child: _RoundCurrencyButton(
               label: state!.currencySymbol,
-              onPressed: () {},
+              onPressed: () {
+                SelectCurrencyModalBottomSheet.show(
+                  context,
+                  currencies!,
+                  onSelect!,
+                );
+              },
             ),
           );
 
