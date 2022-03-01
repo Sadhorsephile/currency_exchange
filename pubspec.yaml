@@ -16,6 +16,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  shimmer: ^2.0.0
   surf_lint_rules: ^1.4.1
 
 dev_dependencies:
