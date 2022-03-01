@@ -1,4 +1,6 @@
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
+import 'package:currency_exchange/resources/colors.dart';
+import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +17,7 @@ IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
 class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Контроллер текстового поля списания
   final TextEditingController _debitController;
+
   /// Контроллер текстового поля зачисления
   final TextEditingController _creditController;
 
@@ -32,17 +35,17 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   UiElementsProperties get uiElementsProperties => UiElementsProperties(
-        appBarTitle: 'Currency exchange',
-        debitHint: 'Списание',
-        creditHint: 'Зачисление',
+        appBarTitle: AppDictionary.mainScreenAppBarTitle,
+        debitHint: AppDictionary.mainScreenDebitHint,
+        creditHint: AppDictionary.mainScreenCreditHint,
         horizontalPadding: 20.0,
         verticalPadding: 10.0,
         spacing: 10.0,
-        backgroundColor: Colors.grey[100]!,
-        errorTextColor: Colors.red,
-        refreshIconColor: Colors.blue,
-        shimmerBaseColor: Colors.grey[100]!,
-        shimmerHighlightColor: Colors.grey[300]!,
+        backgroundColor: AppColors.mainScreenBackgroundColor,
+        errorTextColor: AppColors.mainScreenErrorTextColor,
+        refreshIconColor: AppColors.refreshIconColor,
+        shimmerBaseColor: AppColors.shimmerBaseColor,
+        shimmerHighlightColor: AppColors.shimmerHighlightColor,
         textFieldDecoration: const InputDecoration(
           fillColor: Colors.white,
           filled: true,
@@ -63,11 +66,14 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 abstract class IMainScreenWidgetModel extends WidgetModel {
   /// Источник состояния текстового поля списания
   ListenableState<EntityState<CurrencyTextFieldDto>> get debitTextFieldState;
+
   /// Источник состояния текстового поля зачисления
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState;
+
   /// Текущее состояние ориентации устройства
   Orientation get orientation;
   UiElementsProperties get uiElementsProperties;
+
   /// Форматтер для поля ввода количества валюты (позволяет вводить только числа и знак разделения '.')
   TextInputFormatter get inputFormatter =>
       FilteringTextInputFormatter.allow(RegExp(r'[\d\.]'));
@@ -87,29 +93,40 @@ class CurrencyTextFieldDto {
 class UiElementsProperties {
   /// Текст шапки страницы
   final String appBarTitle;
+
   /// Хинт текстового поля списания
   final String debitHint;
+
   /// Хинт текстового поля зачисления
   final String creditHint;
+
   /// Значение горизонтального отступа
   final double horizontalPadding;
+
   /// Значение вертикального отступа
   final double verticalPadding;
+
   /// Значение отступа между элементами
   final double spacing;
+
   /// Цвет заднего фона экрана
   final Color backgroundColor;
+
   /// Конфигурация внешнего вида текстового поля
   final InputDecoration textFieldDecoration;
+
   /// Цвет текста ошибки
   final Color errorTextColor;
+
   /// Цвет иконки повтора запроса
   final Color refreshIconColor;
+
   /// Базовый цвет шиммера
   final Color shimmerBaseColor;
+
   /// Цвет подсветки шиммера
   final Color shimmerHighlightColor;
-  
+
   UiElementsProperties({
     required this.appBarTitle,
     required this.debitHint,
