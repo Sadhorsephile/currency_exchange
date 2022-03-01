@@ -1,7 +1,8 @@
-import 'package:currency_exchange/core/presentation/screens/main/data.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
+import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
+import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,27 +32,19 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   @override
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState =>
       _creditStateNotifier;
-  @override
-  Orientation get orientation => MediaQuery.of(context).orientation;
 
   @override
-  UiElementsProperties get uiElementsProperties => UiElementsProperties(
-        appBarTitle: 'Currency exchange',
-        debitHint: 'Списание',
-        creditHint: 'Зачисление',
-        horizontalPadding: 20.0,
-        verticalPadding: 10.0,
-        spacing: 10.0,
-        backgroundColor: Colors.grey[100]!,
-        errorTextColor: Colors.red,
-        refreshIconColor: Colors.blue,
-        shimmerBaseColor: Colors.grey[100]!,
-        shimmerHighlightColor: Colors.grey[300]!,
-        textFieldDecoration: const InputDecoration(
-          fillColor: Colors.white,
-          filled: true,
-        ),
-      );
+  String get appBarTitle => AppDictionary.mainScreenAppBarTitle;
+  @override
+  String get debitHint => AppDictionary.mainScreenDebitHint;
+  @override
+  String get creditHint => AppDictionary.mainScreenCreditHint;
+  @override
+  double get horizontalPadding => 20.0;
+  @override
+  double get verticalPadding => 10.0;
+  @override
+  double get spacing => 10.0;
 
   /// Флаг, символизирующий, заблокированы ли для обработчиков-слушателей контроллеры
   bool _isControllersLocked = false;
@@ -130,9 +123,23 @@ abstract class IMainScreenWidgetModel
   /// Источник состояния текстового поля зачисления
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState;
 
-  /// Текущее состояние ориентации устройства
-  Orientation get orientation;
-  UiElementsProperties get uiElementsProperties;
+  /// Текст шапки страницы
+  String get appBarTitle;
+
+  /// Хинт текстового поля списания
+  String get debitHint;
+
+  /// Хинт текстового поля зачисления
+  String get creditHint;
+
+  /// Значение горизонтального отступа
+  double get horizontalPadding;
+
+  /// Значение вертикального отступа
+  double get verticalPadding;
+
+  /// Значение отступа между элементами
+  double get spacing;
 
   /// Форматтер для поля ввода количества валюты (позволяет вводить только числа и знак разделения '.')
   TextInputFormatter get inputFormatter =>
