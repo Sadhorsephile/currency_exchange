@@ -94,26 +94,24 @@ class _CurrencyTextBox extends StatelessWidget {
     CurrencyTextFieldDto? state, [
     String? errorMessage,
   ]) {
-    final textFieldWithButton = Stack(
-      alignment: Alignment.center,
-      children: [
-        TextField(
-          controller: state?.controller,
-          enabled: !isLoading,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [inputFormatter],
-          decoration: InputDecoration(
-            fillColor: Colors.white,
-            filled: true,
-            hintText: hint,
-          ),
-        ),
-        if (state?.currencySymbol != null)
-          Positioned(
-            right: 10,
+    final suffixIcon = state?.currencySymbol == null
+        ? null
+        : Padding(
+            padding: const EdgeInsets.all(5),
             child: _RoundCurrencyButton(label: state!.currencySymbol),
-          ),
-      ],
+          );
+
+    final textFieldWithButton = TextField(
+      controller: state?.controller,
+      enabled: !isLoading,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [inputFormatter],
+      decoration: InputDecoration(
+        fillColor: Colors.white,
+        filled: true,
+        hintText: hint,
+        suffixIcon: suffixIcon,
+      ),
     );
 
     final body = Column(
@@ -125,8 +123,9 @@ class _CurrencyTextBox extends StatelessWidget {
             children: [
               Text(
                 errorMessage,
-                style:
-                    const TextStyle(color: AppColors.mainScreenErrorTextColor),
+                style: const TextStyle(
+                  color: AppColors.mainScreenErrorTextColor,
+                ),
               ),
               const SizedBox(width: 5),
               const Icon(
