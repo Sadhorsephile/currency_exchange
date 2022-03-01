@@ -79,21 +79,70 @@ class _CurrencyTextBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return EntityStateNotifierBuilder<CurrencyTextFieldDto>(
       listenableEntityState: textFieldState,
-      loadingBuilder: (_, state) => _buildBody(true, state),
-      builder: (_, state) => _buildBody(false, state),
-      errorBuilder: (_, ex, state) => _buildBody(
-        false,
-        state,
-        ex.asUserError,
+      loadingBuilder: (_, __) => _CurrencyTextBoxContent.loading(),
+      builder: (_, state) => _CurrencyTextBoxContent.normal(
+        state: state,
+        inputFormatter: inputFormatter,
+        hint: hint,
+      ),
+      errorBuilder: (_, ex, state) => _CurrencyTextBoxContent.error(
+        state: state,
+        inputFormatter: inputFormatter,
+        hint: hint,
+        errorMessage: ex.asUserError,
       ),
     );
   }
+}
 
-  Widget _buildBody(
-    bool isLoading,
-    CurrencyTextFieldDto? state, [
-    String? errorMessage,
-  ]) {
+/// Виджет, представляющий внешний вид текстового поля с кнопкой выбора валюты
+class _CurrencyTextBoxContent extends StatelessWidget {
+  final bool isLoading;
+  final CurrencyTextFieldDto? state;
+  final TextInputFormatter? inputFormatter;
+  final String? hint;
+  final String? errorMessage;
+
+  const _CurrencyTextBoxContent({
+    required this.isLoading,
+    this.inputFormatter,
+    this.hint,
+    this.errorMessage,
+    Key? key,
+    this.state,
+  }) : super(key: key);
+
+  factory _CurrencyTextBoxContent.normal({
+    required TextInputFormatter inputFormatter,
+    CurrencyTextFieldDto? state,
+    String? hint,
+  }) =>
+      _CurrencyTextBoxContent(
+        isLoading: false,
+        state: state,
+        hint: hint,
+        inputFormatter: inputFormatter,
+      );
+
+  factory _CurrencyTextBoxContent.loading() =>
+      const _CurrencyTextBoxContent(isLoading: true);
+
+  factory _CurrencyTextBoxContent.error({
+    required TextInputFormatter inputFormatter,
+    required String errorMessage,
+    CurrencyTextFieldDto? state,
+    String? hint,
+  }) =>
+      _CurrencyTextBoxContent(
+        isLoading: false,
+        state: state,
+        hint: hint,
+        inputFormatter: inputFormatter,
+        errorMessage: errorMessage,
+      );
+
+  @override
+  Widget build(BuildContext context) {
     final suffixIcon = state?.currencySymbol == null
         ? null
         : Padding(
@@ -105,7 +154,7 @@ class _CurrencyTextBox extends StatelessWidget {
       controller: state?.controller,
       enabled: !isLoading,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [inputFormatter],
+      inputFormatters: [if (inputFormatter != null) inputFormatter!],
       decoration: InputDecoration(
         fillColor: Colors.white,
         filled: true,
@@ -122,7 +171,7 @@ class _CurrencyTextBox extends StatelessWidget {
           Row(
             children: [
               Text(
-                errorMessage,
+                errorMessage!,
                 style: const TextStyle(
                   color: AppColors.mainScreenErrorTextColor,
                 ),
