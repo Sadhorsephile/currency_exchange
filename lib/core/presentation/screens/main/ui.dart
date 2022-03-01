@@ -84,7 +84,7 @@ class _CurrencyTextBox extends StatelessWidget {
       errorBuilder: (_, ex, state) => _buildBody(
         false,
         state,
-        ex.toString(),
+        ex.asUserError,
       ),
     );
   }
