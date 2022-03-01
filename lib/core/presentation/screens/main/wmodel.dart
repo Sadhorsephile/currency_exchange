@@ -30,8 +30,6 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   @override
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState =>
       _creditStateNotifier;
-  @override
-  Orientation get orientation => MediaQuery.of(context).orientation;
 
   @override
   String get appBarTitle => AppDictionary.mainScreenAppBarTitle;
@@ -64,9 +62,6 @@ abstract class IMainScreenWidgetModel extends WidgetModel {
   /// Источник состояния текстового поля зачисления
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState;
 
-  /// Текущее состояние ориентации устройства
-  Orientation get orientation;
-
   /// Текст шапки страницы
   String get appBarTitle;
 
@@ -91,5 +86,3 @@ abstract class IMainScreenWidgetModel extends WidgetModel {
 
   IMainScreenWidgetModel(ElementaryModel model) : super(model);
 }
-
-
