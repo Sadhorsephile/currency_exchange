@@ -10,6 +10,15 @@ class CurrencyTextFieldDto {
   CurrencyTextFieldDto(this.controller, this.currencySymbol);
 }
 
+
+class CurrencyInfoDto {
+  final String title;
+  final String code;
+  final String currencySymbol;
+
+  CurrencyInfoDto(this.title, this.currencySymbol, this.code);
+}
+
 /// Расширение-адаптер, преобразующее исключение в текстовую форму,
 /// приемлимую для пользователя
 extension ExceptionTextRetriever on Exception? {

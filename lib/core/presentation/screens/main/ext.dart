@@ -1,3 +1,5 @@
+import 'package:currency_exchange/core/domain/entities/currency.dart';
+import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:flutter/material.dart';
 
 extension DoubleToStringAdapter on String {
@@ -5,6 +7,10 @@ extension DoubleToStringAdapter on String {
     if (isEmpty) return 0;
     return double.tryParse(this);
   }
+}
+
+extension CurrencyDtoAdapter on CurrencyDto {
+  CurrencyInfoDto get toCurrencyInfoDto => CurrencyInfoDto(title, symbol, code);
 }
 
 extension DoubleValidator on TextEditingController {
