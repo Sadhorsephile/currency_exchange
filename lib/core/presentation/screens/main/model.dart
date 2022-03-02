@@ -34,7 +34,7 @@ class MainScreenModel extends ElementaryModel {
   Future<void> loadData() async {
     try {
       final debitToCreditCurrencies = await _currenciesUseCases
-          .getDebitToCreditCurrencies(_currentDebitCurrency.symbol);
+          .getDebitToCreditCurrencies(_currentDebitCurrency.code);
       currencies.value = debitToCreditCurrencies.allCurrencies;
       
       _currentDebitCurrency = debitToCreditCurrencies.debitCurrency;
@@ -42,6 +42,7 @@ class MainScreenModel extends ElementaryModel {
           .getByCode(_currentCreditCurrency.code);
     } on Exception catch (e) {
       handleError(e);
+      rethrow;
     }
   }
 
@@ -58,7 +59,7 @@ class MainScreenModel extends ElementaryModel {
   Future<void> switchDebitTo(String currencyCode) async {
     try {
       _currentDebitCurrency = currencies.value.getByCode(currencyCode);
-      await Future<void>.delayed(const Duration(seconds: 2));
+      await loadData();
     } on Exception catch (e) {
       handleError(e);
     }
