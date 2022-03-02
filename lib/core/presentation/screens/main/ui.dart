@@ -107,6 +107,7 @@ class _CurrencyTextBox extends StatelessWidget {
         errorMessage: ex.asUserError,
         onSelect: onSelect,
         currencies: currencies,
+        onRefreshIconPressed: onRefreshIconPressed,
       ),
     );
   }
@@ -121,12 +122,14 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   final String? errorMessage;
   final Function(CurrencyInfoDto)? onSelect;
   final List<CurrencyInfoDto>? currencies;
+  final VoidCallback? onRefreshIconPressed;
 
   const _CurrencyTextBoxContent({
     required this.isLoading,
     this.onSelect,
     this.currencies,
     this.inputFormatter,
+    this.onRefreshIconPressed,
     this.hint,
     this.errorMessage,
     Key? key,
@@ -161,6 +164,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
     required String errorMessage,
     required Function(CurrencyInfoDto) onSelect,
     required List<CurrencyInfoDto> currencies,
+    required VoidCallback onRefreshIconPressed,
     CurrencyTextFieldDto? state,
     String? hint,
   }) =>
@@ -172,6 +176,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
         currencies: currencies,
         inputFormatter: inputFormatter,
         errorMessage: errorMessage,
+        onRefreshIconPressed: onRefreshIconPressed,
       );
 
   @override
@@ -213,9 +218,12 @@ class _CurrencyTextBoxContent extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 5),
-              const Icon(
-                Icons.refresh,
-                color: AppColors.refreshIconColor,
+              GestureDetector(
+                onTap: onRefreshIconPressed,
+                child: const Icon(
+                  Icons.refresh,
+                  color: AppColors.refreshIconColor,
+                ),
               ),
             ],
           ),
