@@ -1,3 +1,5 @@
+/// Дата-класс, содержащий информацию о валюте и ее отношении к 
+/// другим валютам
 class CurrencyDto {
   final String code;
   final String title;

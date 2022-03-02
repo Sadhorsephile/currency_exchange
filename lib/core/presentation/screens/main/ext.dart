@@ -1,7 +1,10 @@
+import 'package:currency_exchange/common/utils/exceptions.dart';
 import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
+import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:flutter/material.dart';
 
+/// Адаптер из [double] в [String]
 extension DoubleToStringAdapter on String {
   double? get toDoubleOrNull {
     if (isEmpty) return 0;
@@ -9,10 +12,12 @@ extension DoubleToStringAdapter on String {
   }
 }
 
+/// Адаптер из [CurrencyDto] в [CurrencyInfoDto]
 extension CurrencyDtoAdapter on CurrencyDto {
   CurrencyInfoDto get toCurrencyInfoDto => CurrencyInfoDto(title, symbol, code);
 }
 
+/// Валидатор вещественного числа
 extension DoubleValidator on TextEditingController {
   /// Устанавливает в поле текста вещественное число или ничего, если указан 0
   void setDoubleValue(double value) {
@@ -57,5 +62,20 @@ extension DoubleValidator on TextEditingController {
       text: resultText,
       selection: TextSelection.collapsed(offset: resultPosition),
     );
+  }
+}
+
+
+
+/// Расширение-адаптер, преобразующее исключение в текстовую форму,
+/// приемлимую для пользователя
+extension ExceptionTextRetriever on Exception? {
+  String get asUserError {
+    if (this is NoCurrencyCacheFoundException) {
+      return AppDictionary.mainScreenNoCacheError;
+    } else if (this is OnlyCacheAvailableException) {
+      return AppDictionary.mainScreenOnlyCacheAvailableError;
+    }
+    return AppDictionary.mainScreenUnexpectedError;
   }
 }
