@@ -17,6 +17,17 @@ extension CurrencyDtoAdapter on CurrencyDto {
   CurrencyInfoDto get toCurrencyInfoDto => CurrencyInfoDto(title, symbol, code);
 }
 
+/// Расширение, позволяющее получать [CurrencyDto] по полю [CurrencyDto.code]
+extension CurrencyByCodeRetriever on List<CurrencyDto> {
+  CurrencyDto getByCode(String code) {
+    return firstWhere(
+        (e) => e.code == code,
+        orElse: () =>
+            throw Exception('There are no currency with code: $code'),
+      );
+  }
+}
+
 /// Валидатор вещественного числа
 extension DoubleValidator on TextEditingController {
   /// Устанавливает в поле текста вещественное число или ничего, если указан 0

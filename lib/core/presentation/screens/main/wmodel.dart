@@ -1,3 +1,4 @@
+import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
@@ -11,7 +12,10 @@ import 'package:flutter/services.dart';
 /// Фабрика виджет-модели главного экрана
 IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
     MainScreenWidgetModel(
-      MainScreenModel(MainScreenErrorHandler()),
+      MainScreenModel(
+        CurrenciesUseCasesImpl(),
+        MainScreenErrorHandler(),
+      ),
       TextEditingController(),
       TextEditingController(),
     );
