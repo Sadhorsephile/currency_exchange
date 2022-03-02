@@ -4,9 +4,10 @@ import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/resources/currencies.dart';
 
 /// Репозиторий, предоставляющий доступ к списку доступных валют
-// ignore: one_member_abstracts
 abstract class CurrencyRepository {
+  /// Возвращает изначальную валюту зачисления
   CurrencyDto get prepopulatedCredit;
+  /// Возвращает изначальную валюту списания
   CurrencyDto get prepopulatedDebit;
 
   /// Возвращает основную валюту [CurrencyDto], имеющую [CurrencyDto.code] = [code] и список валют,
