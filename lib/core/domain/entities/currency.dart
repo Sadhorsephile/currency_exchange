@@ -1,3 +1,5 @@
+import 'package:currency_exchange/resources/currencies.dart';
+
 /// Дата-класс, содержащий информацию о валюте и ее отношении к
 /// другим валютам
 class CurrencyDto {
@@ -26,10 +28,11 @@ class CurrencyDto {
         codeToValueExchangeRates: {},
       );
 
+  /// Фабрика для создания валюты из кода
   factory CurrencyDto.fromCode(String code) => CurrencyDto(
         code: code,
         title: '',
-        symbol: '',
+        symbol: CurrenciesStaticInfo.list.getSymbolByCode(code),
         codeToValueExchangeRates: {},
       );
 
@@ -41,11 +44,13 @@ class CurrencyDto {
   }
 }
 
-class DebitToCreditCurrenciesContainer {
+/// Дата-класс, содержащий в себе основную валюту и список валют, 
+/// к которым она имеет определенное отношение
+class DebitToCreditCurrenciesDto {
   final CurrencyDto debitCurrency;
   final List<CurrencyDto> creditCurrencies;
 
   List<CurrencyDto> get allCurrencies => [debitCurrency, ...creditCurrencies];
 
-  DebitToCreditCurrenciesContainer(this.debitCurrency, this.creditCurrencies);
+  DebitToCreditCurrenciesDto(this.debitCurrency, this.creditCurrencies);
 }
