@@ -1,5 +1,6 @@
 
 import 'package:currency_exchange/core/data/repository/currency.dart';
+import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
@@ -8,6 +9,7 @@ import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:elementary/elementary.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -20,6 +22,7 @@ IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
       ),
       TextEditingController(),
       TextEditingController(),
+      ScaffoldMessenger.of(_),
     );
 
 /// Виджет-модель главного экрана
@@ -27,11 +30,15 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Контроллер текстового поля списания
   final TextEditingController _debitController;
 
+  final ScaffoldMessengerState _scaffoldMessenger;
+
   /// Контроллер текстового поля зачисления
   final TextEditingController _creditController;
 
   final _debitStateNotifier = EntityStateNotifier<CurrencyTextFieldDto>();
   final _creditStateNotifier = EntityStateNotifier<CurrencyTextFieldDto>();
+
+  final _currencies = ValueNotifier<List<CurrencyDto>>([]);
 
   @override
   ListenableState<EntityState<CurrencyTextFieldDto>> get debitTextFieldState =>
@@ -40,8 +47,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState =>
       _creditStateNotifier;
   @override
-  List<CurrencyInfoDto> get currencies =>
-      model.currencies.value.map((e) => e.toCurrencyInfoDto).toList();
+  ValueListenable<List<CurrencyDto>> get currencies => _currencies;
 
   @override
   String get appBarTitle => AppDictionary.mainScreenAppBarTitle;
@@ -59,6 +65,9 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   TextInputFormatter get inputFormatter =>
       FilteringTextInputFormatter.allow(RegExp(r'[\d\.]'));
 
+  late CurrencyDto _currentDebitCurrency;
+  late CurrencyDto _currentCreditCurrency;
+
   /// Флаг, символизирующий, заблокированы ли для обработчиков-слушателей контроллеры
   bool _isControllersLocked = false;
 
@@ -66,12 +75,15 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     MainScreenModel model,
     this._debitController,
     this._creditController,
+    this._scaffoldMessenger,
   ) : super(model);
 
   @override
   void initWidgetModel() {
     super.initWidgetModel();
     _subscribeControllerListeners();
+    _currentCreditCurrency = model.getInitialCredit();
+    _currentDebitCurrency = model.getInitialDebit();
     _init();
   }
 
@@ -97,8 +109,8 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   @override
-  void onSelectDebit(CurrencyInfoDto currency) {
-    if (currency.code == model.currentCreditCurrency.code) {
+  void onSelectDebit(CurrencyDto currency) {
+    if (currency.code == _currentCreditCurrency.code) {
       _onSameCurrenciesSelect();
       return;
     }
@@ -106,14 +118,15 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     _creditStateNotifier.loading();
     _debitStateNotifier.content(CurrencyTextFieldDto(
       _debitController,
-      currency.currencySymbol,
+      currency.symbol,
     ));
 
-    model.switchDebitTo(currency.code).then((_) {
+    model.switchDebitTo(currency.code).then((debit) {
+      _currentDebitCurrency = debit;
       _creditStateNotifier.content(
         CurrencyTextFieldDto(
           _creditController,
-          model.currentCreditCurrency.symbol,
+          _currentCreditCurrency.symbol,
         ),
       );
       _onDebitChange();
@@ -121,16 +134,16 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   @override
-  void onSelectCredit(CurrencyInfoDto currency) {
-    if (currency.code == model.currentDebitCurrency.code) {
+  void onSelectCredit(CurrencyDto currency) {
+    if (currency.code == _currentDebitCurrency.code) {
       _onSameCurrenciesSelect();
       return;
     }
 
-    model.switchCreditTo(currency.code);
+    _currentCreditCurrency = model.switchCreditTo(currency.code);
     _creditStateNotifier.content(CurrencyTextFieldDto(
       _creditController,
-      currency.currencySymbol,
+      currency.symbol,
     ));
     _onCreditChange();
   }
@@ -147,49 +160,55 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     _debitStateNotifier.loading();
 
     try {
-      await model.loadData();
+      _currencies.value = await model.loadData();
 
       _creditStateNotifier.content(CurrencyTextFieldDto(
         _creditController,
-        model.currentCreditCurrency.symbol,
+        _currentCreditCurrency.symbol,
       ));
       _debitStateNotifier.content(CurrencyTextFieldDto(
         _debitController,
-        model.currentDebitCurrency.symbol,
+        _currentDebitCurrency.symbol,
       ));
     } on Exception catch (e) {
       _debitStateNotifier.error(
         e,
         CurrencyTextFieldDto(
           _debitController,
-          model.currentDebitCurrency.symbol,
+          _currentDebitCurrency.symbol,
         ),
       );
     }
   }
 
   /// Метод, обновляющий содержимое поля зачисления в ответ на изменение содержимого поля списания
-  void _onDebitChange() {
-    if (_isControllersLocked) return;
-
-    _debitController.validateDecimalNumber();
-    final debit = _debitController.text.toDoubleOrNull;
-    if (debit == null) return;
-    _modifyWithoutListenersTrigger(
-      () => _creditController.setDoubleValue(model.fromDebitToCredit(debit)),
-    );
-  }
+  void _onDebitChange() => _onTextChange(
+        _debitController,
+        _creditController,
+        model.fromDebitToCredit,
+      );
 
   /// Метод, обновляющий содержимое поля зачисления в ответ на изменение содержимого поля списания
-  void _onCreditChange() {
-    if (_isControllersLocked) return;
+  void _onCreditChange() => _onTextChange(
+        _creditController,
+        _debitController,
+        model.fromCreditToDebit,
+      );
 
-    _creditController.validateDecimalNumber();
-    final credit = _creditController.text.toDoubleOrNull;
-    if (credit == null) return;
-    _modifyWithoutListenersTrigger(
-      () => _debitController.setDoubleValue(model.fromCreditToDebit(credit)),
-    );
+  /// Метод, выполняющий преобразование значения [passiveController] в зависимости от значения [activeController].
+  /// Преобразование определяется функцией [transformer]
+  void _onTextChange(
+    TextEditingController activeController,
+    TextEditingController passiveController,
+    double Function(double) transformer,
+  ) {
+    if (_isControllersLocked) return;
+    activeController.validateDecimalNumber();
+    final value = activeController.text.toDoubleOrNull;
+    if (value == null) return;
+    _modifyWithoutListenersTrigger(() {
+      passiveController.setDoubleValue(transformer(value));
+    });
   }
 
   /// Метод, позволяющий выполнять модификацию значений контроллера, не вызывая
@@ -208,8 +227,8 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Метод, отображающий снек-бар с сообщением [message]
   Future<void> _showSnackBarMessage(String message) async {
     WidgetsBinding.instance!.addPostFrameCallback(
-      (timeStamp) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      (_) {
+        _scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(message),
           ),
@@ -229,7 +248,7 @@ abstract class IMainScreenWidgetModel
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState;
 
   /// Источник данных о списках доступных для конвертации валют
-  List<CurrencyInfoDto> get currencies;
+  ValueListenable<List<CurrencyDto>> get currencies;
 
   /// Текст шапки страницы
   String get appBarTitle;
@@ -258,8 +277,8 @@ abstract class IMainScreenWidgetModel
   void onRetryPressed();
 
   /// Метод, вызываемый в момент выбора валюты списания для конвертации
-  void onSelectDebit(CurrencyInfoDto currency);
+  void onSelectDebit(CurrencyDto currency);
 
   /// Метод, вызываемый в момент выбора валюты зачисления для конвертации
-  void onSelectCredit(CurrencyInfoDto currency);
+  void onSelectCredit(CurrencyDto currency);
 }

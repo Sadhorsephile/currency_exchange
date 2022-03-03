@@ -1,6 +1,5 @@
 import 'package:currency_exchange/common/utils/exceptions.dart';
 import 'package:currency_exchange/core/domain/entities/currency.dart';
-import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:flutter/material.dart';
 
@@ -12,10 +11,6 @@ extension DoubleToStringAdapter on String {
   }
 }
 
-/// Адаптер из [CurrencyDto] в [CurrencyInfoDto]
-extension CurrencyDtoAdapter on CurrencyDto {
-  CurrencyInfoDto get toCurrencyInfoDto => CurrencyInfoDto(title, symbol, code);
-}
 
 /// Расширение, позволяющее получать [CurrencyDto] по полю [CurrencyDto.code]
 extension CurrencyByCodeRetriever on List<CurrencyDto> {
@@ -39,44 +34,24 @@ extension DoubleValidator on TextEditingController {
   void validateDecimalNumber() {
     if (text.isEmpty) return;
 
-    // проверка, является ли введенный текст валидным числом
-    final isValid = double.tryParse(text) != null;
+    final validator = RegExp(r'^[0-9]+\.?[0-9]{0,2}$');
 
-    // если нет, требуется удаление последнего введенного символа (чтобы содержимое контроллера оставалось валидным числом или пустым)
-    if (!isValid) {
-      final position = selection.baseOffset;
-      final textWithoutLastEnteredSymbol =
-          text.substring(0, position - 1) + text.substring(position);
+    if (validator.hasMatch(text)) return;
+    
+    _removeLastEnteredCharacter();
+  }
 
-      value = TextEditingValue(
-        text: textWithoutLastEnteredSymbol,
-        selection: TextSelection.collapsed(offset: position - 1),
-      );
-    }
-
-    if (!text.contains('.')) return;
-
-    final parts = text.split('.');
-
-    // Проверка на наличие дробной части
-    if (parts.length < 2) return;
-    // Проверка на наличие сотой доли в дробной части
-    if (parts.last.length < 2) return;
-
-    final position = value.selection.baseOffset;
-
-    final resultText = '${parts.first}.${parts.last.substring(0, 2)}';
-
-    final resultPosition = position > text.length ? text.length : position;
+  void _removeLastEnteredCharacter() {
+    final position = selection.baseOffset;
+    final textWithoutLastEnteredSymbol =
+        text.substring(0, position - 1) + text.substring(position);
 
     value = TextEditingValue(
-      text: resultText,
-      selection: TextSelection.collapsed(offset: resultPosition),
+      text: textWithoutLastEnteredSymbol,
+      selection: TextSelection.collapsed(offset: position - 1),
     );
   }
 }
-
-
 
 /// Расширение-адаптер, преобразующее исключение в текстовую форму,
 /// приемлимую для пользователя
