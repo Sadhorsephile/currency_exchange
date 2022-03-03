@@ -1,5 +1,4 @@
 import 'package:currency_exchange/common/utils/exceptions.dart';
-import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:flutter/material.dart';
 
@@ -9,14 +8,6 @@ extension DoubleToStringAdapter on String {
     if (isEmpty) return 0;
     return double.tryParse(this);
   }
-}
-
-/// Расширение, позволяющее получить валюту по ее коду
-extension GetByCodeCurrencyRetriever on List<CurrencyDto> {
-  CurrencyDto getByCode(String currencyCode) => firstWhere(
-        (e) => e.code == currencyCode,
-        orElse: throw Exception('No currency found with code = $currencyCode'),
-      );
 }
 
 /// Валидатор вещественного числа
