@@ -1,6 +1,5 @@
 import 'package:currency_exchange/common/utils/exceptions.dart';
 import 'package:currency_exchange/core/domain/entities/currency.dart';
-import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:flutter/material.dart';
 
@@ -12,10 +11,6 @@ extension DoubleToStringAdapter on String {
   }
 }
 
-/// Адаптер из [CurrencyDto] в [CurrencyInfoDto]
-extension CurrencyDtoAdapter on CurrencyDto {
-  CurrencyInfoDto get toCurrencyInfoDto => CurrencyInfoDto(title, symbol, code);
-}
 
 /// Расширение, позволяющее получать [CurrencyDto] по полю [CurrencyDto.code]
 extension CurrencyByCodeRetriever on List<CurrencyDto> {

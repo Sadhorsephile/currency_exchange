@@ -8,13 +8,3 @@ class CurrencyTextFieldDto {
   CurrencyTextFieldDto(this.controller, this.currencySymbol);
 }
 
-
-/// Дата-класс валюты, содержающий информацию, необходимую ui
-class CurrencyInfoDto {
-  final String title;
-  final String code;
-  final String currencySymbol;
-
-  CurrencyInfoDto(this.title, this.currencySymbol, this.code);
-}
-

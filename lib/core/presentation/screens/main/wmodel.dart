@@ -1,6 +1,7 @@
 import 'package:currency_exchange/core/data/network/client.dart';
 import 'package:currency_exchange/core/data/network/service/get_exchange_rates.dart';
 import 'package:currency_exchange/core/data/repository/currency.dart';
+import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
@@ -9,6 +10,7 @@ import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:elementary/elementary.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -48,8 +50,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState =>
       _creditStateNotifier;
   @override
-  List<CurrencyInfoDto> get currencies =>
-      model.currencies.value.map((e) => e.toCurrencyInfoDto).toList();
+  ValueListenable<List<CurrencyDto>> get currencies => model.currencies;
 
   @override
   String get appBarTitle => AppDictionary.mainScreenAppBarTitle;
@@ -105,7 +106,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   @override
-  void onSelectDebit(CurrencyInfoDto currency) {
+  void onSelectDebit(CurrencyDto currency) {
     if (currency.code == model.currentCreditCurrency.code) {
       _onSameCurrenciesSelect();
       return;
@@ -114,7 +115,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     _creditStateNotifier.loading();
     _debitStateNotifier.content(CurrencyTextFieldDto(
       _debitController,
-      currency.currencySymbol,
+      currency.symbol,
     ));
 
     model.switchDebitTo(currency.code).then((_) {
@@ -129,7 +130,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   @override
-  void onSelectCredit(CurrencyInfoDto currency) {
+  void onSelectCredit(CurrencyDto currency) {
     if (currency.code == model.currentDebitCurrency.code) {
       _onSameCurrenciesSelect();
       return;
@@ -138,7 +139,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     model.switchCreditTo(currency.code);
     _creditStateNotifier.content(CurrencyTextFieldDto(
       _creditController,
-      currency.currencySymbol,
+      currency.symbol,
     ));
     _onCreditChange();
   }
@@ -237,7 +238,7 @@ abstract class IMainScreenWidgetModel
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState;
 
   /// Источник данных о списках доступных для конвертации валют
-  List<CurrencyInfoDto> get currencies;
+  ValueListenable<List<CurrencyDto>> get currencies;
 
   /// Текст шапки страницы
   String get appBarTitle;
@@ -266,8 +267,8 @@ abstract class IMainScreenWidgetModel
   void onRetryPressed();
 
   /// Метод, вызываемый в момент выбора валюты списания для конвертации
-  void onSelectDebit(CurrencyInfoDto currency);
+  void onSelectDebit(CurrencyDto currency);
 
   /// Метод, вызываемый в момент выбора валюты зачисления для конвертации
-  void onSelectCredit(CurrencyInfoDto currency);
+  void onSelectCredit(CurrencyDto currency);
 }
