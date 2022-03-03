@@ -1,3 +1,4 @@
+import 'package:currency_exchange/common/utils/snackbar_messenger.dart';
 import 'package:currency_exchange/core/data/network/client.dart';
 import 'package:currency_exchange/core/data/network/service/get_exchange_rates.dart';
 import 'package:currency_exchange/core/data/repository/currency.dart';
@@ -30,7 +31,7 @@ IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
       ),
       TextEditingController(),
       TextEditingController(),
-      ScaffoldMessenger.of(_),
+      SnackBarMessengerImpl(_),
     );
 
 /// Виджет-модель главного экрана
@@ -38,7 +39,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Контроллер текстового поля списания
   final TextEditingController _debitController;
 
-  final ScaffoldMessengerState _scaffoldMessenger;
+  final SnackBarMessenger _snackBarMessenger;
 
   /// Контроллер текстового поля зачисления
   final TextEditingController _creditController;
@@ -83,7 +84,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     MainScreenModel model,
     this._debitController,
     this._creditController,
-    this._scaffoldMessenger,
+    this._snackBarMessenger,
   ) : super(model);
 
   @override
@@ -108,7 +109,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void onErrorHandle(Object error) {
-    _showSnackBarMessage(AppDictionary.mainScreenUnexpectedError);
+    _snackBarMessenger.showSnackBar(AppDictionary.mainScreenUnexpectedError);
   }
 
   @override
@@ -229,20 +230,8 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   /// Метод, отображающий снек-бар с предупреждением
   void _onSameCurrenciesSelect() {
-    _showSnackBarMessage(AppDictionary.mainScreenSameCurrenciesSelectedWarning);
-  }
-
-  /// Метод, отображающий снек-бар с сообщением [message]
-  Future<void> _showSnackBarMessage(String message) async {
-    WidgetsBinding.instance!.addPostFrameCallback(
-      (_) {
-        _scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(message),
-          ),
-        );
-      },
-    );
+    _snackBarMessenger
+        .showSnackBar(AppDictionary.mainScreenSameCurrenciesSelectedWarning);
   }
 }
 
