@@ -1,52 +1,59 @@
 import 'package:currency_exchange/core/domain/entities/currency.dart';
+import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:elementary/elementary.dart';
-import 'package:flutter/foundation.dart';
 
 /// Модель главного экрана
 class MainScreenModel extends ElementaryModel {
-  /// Список доступных валют
-  final currencies = ValueNotifier<List<CurrencyDto>>(_mockCurrencies);
+  late CurrencyDto _currentDebitCurrency;
+  late CurrencyDto _currentCreditCurrency;
 
-  /// Текущая валюта списания
-  CurrencyDto get currentDebitCurrency => _currentDebitCurrency;
-  /// Текущая валюта зачисления
-  CurrencyDto get currentCreditCurrency => _currentCreditCurrency;
-
-  CurrencyDto _currentDebitCurrency = _rub;
-  CurrencyDto _currentCreditCurrency = _usd;
+  var _currencies = <CurrencyDto>[];
 
   MainScreenModel(ErrorHandler errorHandler)
       : super(errorHandler: errorHandler);
 
+  @override
+  void init() {
+    _currentDebitCurrency = getInitialDebit();
+    _currentCreditCurrency = getInitialCredit();
+  }
+
+  CurrencyDto getInitialDebit() => _rub;
+  CurrencyDto getInitialCredit() => _usd;
+
   /// Метод загрузки данных для экрана
-  Future<void> loadData() {
-    return Future<void>.delayed(const Duration(seconds: 2));
+  Future<List<CurrencyDto>> loadData() async {
+    try {
+      _currencies = _mockCurrencies;
+
+      _currentDebitCurrency = _rub;
+      _currentCreditCurrency = _usd;
+      return _currencies;
+    } on Exception catch (e) {
+      handleError(e);
+      rethrow;
+    }
   }
 
   /// Метод, меняющий текущую валюту зачисления на валюту, имеющую код [currencyCode]
-  void switchCreditTo(String currencyCode) {
+  CurrencyDto switchCreditTo(String currencyCode) {
     try {
-      _currentCreditCurrency = currencies.value.firstWhere(
-        (e) => e.code == currencyCode,
-        orElse: () =>
-            throw Exception('There are no currency with code: $currencyCode'),
-      );
+      return _currentCreditCurrency = _mockCurrencies.getByCode(currencyCode);
     } on Exception catch (e) {
       handleError(e);
+      rethrow;
     }
   }
 
   /// Метод, меняющий текущую валюту списания на валюту, имеющую код [currencyCode]
-  Future<void> switchDebitTo(String currencyCode) async {
+  Future<CurrencyDto> switchDebitTo(String currencyCode) async {
     try {
-      _currentDebitCurrency = currencies.value.firstWhere(
-        (e) => e.code == currencyCode,
-        orElse: () =>
-            throw Exception('There are no currency with code: $currencyCode'),
-      );
-      await Future<void>.delayed(const Duration(seconds: 2));
+      _currentDebitCurrency = _mockCurrencies.getByCode(currencyCode);
+      await loadData();
+      return _currentDebitCurrency;
     } on Exception catch (e) {
       handleError(e);
+      rethrow;
     }
   }
 

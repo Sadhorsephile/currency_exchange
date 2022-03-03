@@ -1,3 +1,4 @@
+import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
@@ -5,6 +6,7 @@ import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:elementary/elementary.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -27,6 +29,8 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   final _debitStateNotifier = EntityStateNotifier<CurrencyTextFieldDto>();
   final _creditStateNotifier = EntityStateNotifier<CurrencyTextFieldDto>();
 
+  final _currencies = ValueNotifier<List<CurrencyDto>>([]);
+
   @override
   ListenableState<EntityState<CurrencyTextFieldDto>> get debitTextFieldState =>
       _debitStateNotifier;
@@ -34,8 +38,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState =>
       _creditStateNotifier;
   @override
-  List<CurrencyInfoDto> get currencies =>
-      model.currencies.value.map((e) => e.toCurrencyInfoDto).toList();
+  ValueListenable<List<CurrencyDto>> get currencies => _currencies;
 
   @override
   String get appBarTitle => AppDictionary.mainScreenAppBarTitle;
@@ -53,6 +56,9 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   TextInputFormatter get inputFormatter =>
       FilteringTextInputFormatter.allow(RegExp(r'[\d\.]'));
 
+  late CurrencyDto _currentDebitCurrency;
+  late CurrencyDto _currentCreditCurrency;
+
   /// Флаг, символизирующий, заблокированы ли для обработчиков-слушателей контроллеры
   bool _isControllersLocked = false;
 
@@ -66,6 +72,8 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   void initWidgetModel() {
     super.initWidgetModel();
     _subscribeControllerListeners();
+    _currentCreditCurrency = model.getInitialCredit();
+    _currentDebitCurrency = model.getInitialDebit();
     _init();
   }
 
@@ -91,8 +99,8 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   @override
-  void onSelectDebit(CurrencyInfoDto currency) {
-    if (currency.code == model.currentCreditCurrency.code) {
+  void onSelectDebit(CurrencyDto currency) {
+    if (currency.code == _currentCreditCurrency.code) {
       _onSameCurrenciesSelect();
       return;
     }
@@ -100,14 +108,15 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     _creditStateNotifier.loading();
     _debitStateNotifier.content(CurrencyTextFieldDto(
       _debitController,
-      currency.currencySymbol,
+      currency.symbol,
     ));
 
-    model.switchDebitTo(currency.code).then((_) {
+    model.switchDebitTo(currency.code).then((debit) {
+      _currentDebitCurrency = debit;
       _creditStateNotifier.content(
         CurrencyTextFieldDto(
           _creditController,
-          model.currentCreditCurrency.symbol,
+          _currentCreditCurrency.symbol,
         ),
       );
       _onDebitChange();
@@ -115,16 +124,16 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   @override
-  void onSelectCredit(CurrencyInfoDto currency) {
-    if (currency.code == model.currentDebitCurrency.code) {
+  void onSelectCredit(CurrencyDto currency) {
+    if (currency.code == _currentDebitCurrency.code) {
       _onSameCurrenciesSelect();
       return;
     }
 
-    model.switchCreditTo(currency.code);
+    _currentCreditCurrency = model.switchCreditTo(currency.code);
     _creditStateNotifier.content(CurrencyTextFieldDto(
       _creditController,
-      currency.currencySymbol,
+      currency.symbol,
     ));
     _onCreditChange();
   }
@@ -136,20 +145,30 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   /// Метод инциализации данных, необходимых для функционирования экрана
-  void _init() {
+  Future<void> _init() async {
     _creditStateNotifier.loading();
     _debitStateNotifier.loading();
 
-    model.loadData().then((_) {
+    try {
+      _currencies.value = await model.loadData();
+
       _creditStateNotifier.content(CurrencyTextFieldDto(
         _creditController,
-        model.currentCreditCurrency.symbol,
+        _currentCreditCurrency.symbol,
       ));
       _debitStateNotifier.content(CurrencyTextFieldDto(
         _debitController,
-        model.currentDebitCurrency.symbol,
+        _currentDebitCurrency.symbol,
       ));
-    });
+    } on Exception catch (e) {
+      _debitStateNotifier.error(
+        e,
+        CurrencyTextFieldDto(
+          _debitController,
+          _currentDebitCurrency.symbol,
+        ),
+      );
+    }
   }
 
   /// Метод, обновляющий содержимое поля зачисления в ответ на изменение содержимого поля списания
@@ -190,9 +209,16 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   /// Метод, отображающий снек-бар с сообщением [message]
-  void _showSnackBarMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+  Future<void> _showSnackBarMessage(String message) async {
+    WidgetsBinding.instance!.addPostFrameCallback(
+      (timeStamp) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -206,7 +232,7 @@ abstract class IMainScreenWidgetModel
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState;
 
   /// Источник данных о списках доступных для конвертации валют
-  List<CurrencyInfoDto> get currencies;
+  ValueListenable<List<CurrencyDto>> get currencies;
 
   /// Текст шапки страницы
   String get appBarTitle;
@@ -235,8 +261,8 @@ abstract class IMainScreenWidgetModel
   void onRetryPressed();
 
   /// Метод, вызываемый в момент выбора валюты списания для конвертации
-  void onSelectDebit(CurrencyInfoDto currency);
+  void onSelectDebit(CurrencyDto currency);
 
   /// Метод, вызываемый в момент выбора валюты зачисления для конвертации
-  void onSelectCredit(CurrencyInfoDto currency);
+  void onSelectCredit(CurrencyDto currency);
 }
