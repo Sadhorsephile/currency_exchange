@@ -1,47 +1,58 @@
-import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
+import 'package:bottom_sheet/bottom_sheet.dart';
+import 'package:currency_exchange/core/domain/entities/currency.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Контент модального окна со списком доступных для конвертации валют
 class SelectCurrencyModalBottomSheet extends StatelessWidget {
-  final List<CurrencyInfoDto> currencies;
-  final Function(CurrencyInfoDto) onSelect;
+  final ValueListenable<List<CurrencyDto>> currencies;
+  final Function(CurrencyDto) onSelect;
+  final ScrollController scrollController;
 
   const SelectCurrencyModalBottomSheet({
     required this.currencies,
     required this.onSelect,
+    required this.scrollController,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: currencies
-          .map(
-            (e) => _CurrencySelectableItem(
-              currency: e,
-              onPressed: () {
-                onSelect(e);
-                Navigator.pop(context);
-              },
-            ),
-          )
-          .toList(),
+    return ValueListenableBuilder<List<CurrencyDto>>(
+      valueListenable: currencies,
+      builder: (context, data,_) {
+        return ListView(
+          controller: scrollController,
+          children: data
+              .map(
+                (e) => _CurrencySelectableItem(
+                  currency: e,
+                  onPressed: () {
+                    onSelect(e);
+                    Navigator.pop(context);
+                  },
+                ),
+              )
+              .toList(),
+        );
+      },
     );
   }
 
   /// Метод открытия модального окна
   static Future<void> show(
     BuildContext context,
-    List<CurrencyInfoDto> currencies,
-    Function(CurrencyInfoDto) onSelect,
+    ValueListenable<List<CurrencyDto>> currencies,
+    Function(CurrencyDto) onSelect,
   ) {
-    return showModalBottomSheet(
+    return showFlexibleBottomSheet(
       context: context,
-      isScrollControlled: true,
-      builder: (_) => SelectCurrencyModalBottomSheet(
+      initHeight: 0.8,
+      maxHeight: 0.8,
+      builder: (_, scrollController, __) => SelectCurrencyModalBottomSheet(
         currencies: currencies,
         onSelect: onSelect,
+        scrollController: scrollController,
       ),
     );
   }
@@ -49,7 +60,7 @@ class SelectCurrencyModalBottomSheet extends StatelessWidget {
 
 /// Карточка валюты
 class _CurrencySelectableItem extends StatelessWidget {
-  final CurrencyInfoDto currency;
+  final CurrencyDto currency;
   final VoidCallback onPressed;
 
   const _CurrencySelectableItem({
@@ -60,33 +71,37 @@ class _CurrencySelectableItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 20,
-        ),
-        decoration: const BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: Colors.grey),
+    return Material(
+      child: InkWell(
+        onTap: onPressed,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 20,
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              currency.title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+          decoration: const BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Colors.grey),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  currency.title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-            Text(
-              currency.currencySymbol,
-              style: const TextStyle(fontSize: 18),
-            ),
-          ],
+              Text(
+                currency.symbol,
+                style: const TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
         ),
       ),
     );
