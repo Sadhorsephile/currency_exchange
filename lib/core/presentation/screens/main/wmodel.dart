@@ -28,10 +28,10 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Контроллер текстового поля списания
   final TextEditingController _debitController;
 
-  final ScaffoldMessengerState _scaffoldMessenger;
-
   /// Контроллер текстового поля зачисления
   final TextEditingController _creditController;
+
+  final ScaffoldMessengerState _scaffoldMessenger;
 
   final _debitStateNotifier = EntityStateNotifier<CurrencyTextFieldDto>();
   final _creditStateNotifier = EntityStateNotifier<CurrencyTextFieldDto>();
@@ -44,6 +44,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   @override
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState =>
       _creditStateNotifier;
+
   @override
   ValueListenable<List<CurrencyDto>> get currencies => _currencies;
 
@@ -63,9 +64,6 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   TextInputFormatter get inputFormatter =>
       FilteringTextInputFormatter.allow(RegExp(r'[\d\.]'));
 
-  late CurrencyDto _currentDebitCurrency;
-  late CurrencyDto _currentCreditCurrency;
-
   /// Флаг, символизирующий, заблокированы ли для обработчиков-слушателей контроллеры
   bool _isControllersLocked = false;
 
@@ -80,8 +78,6 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   void initWidgetModel() {
     super.initWidgetModel();
     _subscribeControllerListeners();
-    _currentCreditCurrency = model.getInitialCredit();
-    _currentDebitCurrency = model.getInitialDebit();
     _init();
   }
 
@@ -108,7 +104,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void onSelectDebit(CurrencyDto currency) {
-    if (currency.code == _currentCreditCurrency.code) {
+    if (currency.code == model.credit.code) {
       _onSameCurrenciesSelect();
       return;
     }
@@ -119,12 +115,11 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
       currency.symbol,
     ));
 
-    model.switchDebitTo(currency.code).then((debit) {
-      _currentDebitCurrency = debit;
+    model.switchDebitTo(currency).then((_) {
       _creditStateNotifier.content(
         CurrencyTextFieldDto(
           _creditController,
-          _currentCreditCurrency.symbol,
+          model.credit.symbol,
         ),
       );
       _onDebitChange();
@@ -133,12 +128,12 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void onSelectCredit(CurrencyDto currency) {
-    if (currency.code == _currentDebitCurrency.code) {
+    if (currency.code == model.debit.code) {
       _onSameCurrenciesSelect();
       return;
     }
 
-    _currentCreditCurrency = model.switchCreditTo(currency.code);
+    model.switchCreditTo(currency);
     _creditStateNotifier.content(CurrencyTextFieldDto(
       _creditController,
       currency.symbol,
@@ -158,22 +153,23 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     _debitStateNotifier.loading();
 
     try {
-      _currencies.value = await model.loadData();
+      await model.loadData();
+      _currencies.value = model.currencies;
 
       _creditStateNotifier.content(CurrencyTextFieldDto(
         _creditController,
-        _currentCreditCurrency.symbol,
+        model.credit.symbol,
       ));
       _debitStateNotifier.content(CurrencyTextFieldDto(
         _debitController,
-        _currentDebitCurrency.symbol,
+        model.debit.symbol,
       ));
     } on Exception catch (e) {
       _debitStateNotifier.error(
         e,
         CurrencyTextFieldDto(
           _debitController,
-          _currentDebitCurrency.symbol,
+          model.debit.symbol,
         ),
       );
     }
