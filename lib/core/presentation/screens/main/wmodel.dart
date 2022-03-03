@@ -30,6 +30,7 @@ IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
       ),
       TextEditingController(),
       TextEditingController(),
+      ScaffoldMessenger.of(_),
     );
 
 /// Виджет-модель главного экрана
@@ -37,11 +38,15 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Контроллер текстового поля списания
   final TextEditingController _debitController;
 
+  final ScaffoldMessengerState _scaffoldMessenger;
+
   /// Контроллер текстового поля зачисления
   final TextEditingController _creditController;
 
   final _debitStateNotifier = EntityStateNotifier<CurrencyTextFieldDto>();
   final _creditStateNotifier = EntityStateNotifier<CurrencyTextFieldDto>();
+
+  final _currencies = ValueNotifier<List<CurrencyDto>>([]);
 
   @override
   ListenableState<EntityState<CurrencyTextFieldDto>> get debitTextFieldState =>
@@ -50,7 +55,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   ListenableState<EntityState<CurrencyTextFieldDto>> get creditTextFieldState =>
       _creditStateNotifier;
   @override
-  ValueListenable<List<CurrencyDto>> get currencies => model.currencies;
+  ValueListenable<List<CurrencyDto>> get currencies => _currencies;
 
   @override
   String get appBarTitle => AppDictionary.mainScreenAppBarTitle;
@@ -68,6 +73,9 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   TextInputFormatter get inputFormatter =>
       FilteringTextInputFormatter.allow(RegExp(r'[\d\.]'));
 
+  late CurrencyDto _currentDebitCurrency;
+  late CurrencyDto _currentCreditCurrency;
+
   /// Флаг, символизирующий, заблокированы ли для обработчиков-слушателей контроллеры
   bool _isControllersLocked = false;
 
@@ -75,12 +83,15 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     MainScreenModel model,
     this._debitController,
     this._creditController,
+    this._scaffoldMessenger,
   ) : super(model);
 
   @override
   void initWidgetModel() {
     super.initWidgetModel();
     _subscribeControllerListeners();
+    _currentCreditCurrency = model.getInitialCredit();
+    _currentDebitCurrency = model.getInitialDebit();
     _init();
   }
 
@@ -107,7 +118,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void onSelectDebit(CurrencyDto currency) {
-    if (currency.code == model.currentCreditCurrency.code) {
+    if (currency.code == _currentCreditCurrency.code) {
       _onSameCurrenciesSelect();
       return;
     }
@@ -118,11 +129,12 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
       currency.symbol,
     ));
 
-    model.switchDebitTo(currency.code).then((_) {
+    model.switchDebitTo(currency.code).then((debit) {
+      _currentDebitCurrency = debit;
       _creditStateNotifier.content(
         CurrencyTextFieldDto(
           _creditController,
-          model.currentCreditCurrency.symbol,
+          _currentCreditCurrency.symbol,
         ),
       );
       _onDebitChange();
@@ -131,12 +143,12 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void onSelectCredit(CurrencyDto currency) {
-    if (currency.code == model.currentDebitCurrency.code) {
+    if (currency.code == _currentDebitCurrency.code) {
       _onSameCurrenciesSelect();
       return;
     }
 
-    model.switchCreditTo(currency.code);
+    _currentCreditCurrency = model.switchCreditTo(currency.code);
     _creditStateNotifier.content(CurrencyTextFieldDto(
       _creditController,
       currency.symbol,
@@ -156,49 +168,55 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     _debitStateNotifier.loading();
 
     try {
-      await model.loadData();
+      _currencies.value = await model.loadData();
 
       _creditStateNotifier.content(CurrencyTextFieldDto(
         _creditController,
-        model.currentCreditCurrency.symbol,
+        _currentCreditCurrency.symbol,
       ));
       _debitStateNotifier.content(CurrencyTextFieldDto(
         _debitController,
-        model.currentDebitCurrency.symbol,
+        _currentDebitCurrency.symbol,
       ));
     } on Exception catch (e) {
       _debitStateNotifier.error(
         e,
         CurrencyTextFieldDto(
           _debitController,
-          model.currentDebitCurrency.symbol,
+          _currentDebitCurrency.symbol,
         ),
       );
     }
   }
 
   /// Метод, обновляющий содержимое поля зачисления в ответ на изменение содержимого поля списания
-  void _onDebitChange() {
-    if (_isControllersLocked) return;
-
-    _debitController.validateDecimalNumber();
-    final debit = _debitController.text.toDoubleOrNull;
-    if (debit == null) return;
-    _modifyWithoutListenersTrigger(
-      () => _creditController.setDoubleValue(model.fromDebitToCredit(debit)),
-    );
-  }
+  void _onDebitChange() => _onTextChange(
+        _debitController,
+        _creditController,
+        model.fromDebitToCredit,
+      );
 
   /// Метод, обновляющий содержимое поля зачисления в ответ на изменение содержимого поля списания
-  void _onCreditChange() {
-    if (_isControllersLocked) return;
+  void _onCreditChange() => _onTextChange(
+        _creditController,
+        _debitController,
+        model.fromCreditToDebit,
+      );
 
-    _creditController.validateDecimalNumber();
-    final credit = _creditController.text.toDoubleOrNull;
-    if (credit == null) return;
-    _modifyWithoutListenersTrigger(
-      () => _debitController.setDoubleValue(model.fromCreditToDebit(credit)),
-    );
+  /// Метод, выполняющий преобразование значения [passiveController] в зависимости от значения [activeController].
+  /// Преобразование определяется функцией [transformer]
+  void _onTextChange(
+    TextEditingController activeController,
+    TextEditingController passiveController,
+    double Function(double) transformer,
+  ) {
+    if (_isControllersLocked) return;
+    activeController.validateDecimalNumber();
+    final value = activeController.text.toDoubleOrNull;
+    if (value == null) return;
+    _modifyWithoutListenersTrigger(() {
+      passiveController.setDoubleValue(transformer(value));
+    });
   }
 
   /// Метод, позволяющий выполнять модификацию значений контроллера, не вызывая
@@ -217,8 +235,8 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Метод, отображающий снек-бар с сообщением [message]
   Future<void> _showSnackBarMessage(String message) async {
     WidgetsBinding.instance!.addPostFrameCallback(
-      (timeStamp) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      (_) {
+        _scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(message),
           ),
