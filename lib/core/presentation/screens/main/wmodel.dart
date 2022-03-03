@@ -109,7 +109,11 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void onErrorHandle(Object error) {
-    _snackBarMessenger.showSnackBar(AppDictionary.mainScreenUnexpectedError);
+    _snackBarMessenger.showSnackBar(
+      error is Exception
+          ? error.asUserError
+          : AppDictionary.mainScreenUnexpectedError,
+    );
   }
 
   @override
