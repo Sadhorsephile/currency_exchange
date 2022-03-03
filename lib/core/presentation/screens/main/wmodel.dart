@@ -172,27 +172,34 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   /// Метод, обновляющий содержимое поля зачисления в ответ на изменение содержимого поля списания
-  void _onDebitChange() {
-    if (_isControllersLocked) return;
-
-    _debitController.validateDecimalNumber();
-    final debit = _debitController.text.toDoubleOrNull;
-    if (debit == null) return;
-    _modifyWithoutListenersTrigger(
-      () => _creditController.setDoubleValue(model.fromDebitToCredit(debit)),
-    );
-  }
+  void _onDebitChange() => _onTextChange(
+        _debitController,
+        _creditController,
+        model.fromDebitToCredit,
+      );
 
   /// Метод, обновляющий содержимое поля зачисления в ответ на изменение содержимого поля списания
-  void _onCreditChange() {
-    if (_isControllersLocked) return;
+  void _onCreditChange() => _onTextChange(
+        _creditController,
+        _debitController,
+        model.fromCreditToDebit,
+      );
 
-    _creditController.validateDecimalNumber();
-    final credit = _creditController.text.toDoubleOrNull;
-    if (credit == null) return;
-    _modifyWithoutListenersTrigger(
-      () => _debitController.setDoubleValue(model.fromCreditToDebit(credit)),
-    );
+  
+  /// Метод, выполняющий преобразование значения [passiveController] в зависимости от значения [activeController].
+  /// Преобразование определяется функцией [transformer]
+  void _onTextChange(
+    TextEditingController activeController,
+    TextEditingController passiveController,
+    double Function(double) transformer,
+  ) {
+    if (_isControllersLocked) return;
+    activeController.validateDecimalNumber();
+    final value = activeController.text.toDoubleOrNull;
+    if (value == null) return;
+    _modifyWithoutListenersTrigger(() {
+      passiveController.setDoubleValue(transformer(value));
+    });
   }
 
   /// Метод, позволяющий выполнять модификацию значений контроллера, не вызывая
