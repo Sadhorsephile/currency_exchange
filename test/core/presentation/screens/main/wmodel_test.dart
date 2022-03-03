@@ -34,12 +34,11 @@ void main() {
         creditController = TextEditingController();
         _snackBarMessengerMock = SnackBarMessengerMock();
 
-        when(() => modelData.loadData())
-            .thenAnswer((_) => Future.value(_mockCurrencies));
-        when(() => modelData.getInitialCredit()).thenReturn(_usd);
-        when(() => modelData.getInitialDebit()).thenReturn(_rub);
-        when(() => modelData.switchDebitTo(_rubCode))
-            .thenAnswer((_) => Future.value(_rub));
+        when(() => modelData.loadData()).thenAnswer((_) async {});
+        when(() => modelData.debit).thenReturn(_initialDebitCurrency);
+        when(() => modelData.credit).thenReturn(_initialCreditCurrency);
+        when(() => modelData.currencies).thenReturn(_mockCurrencies);
+        when(() => modelData.switchDebitTo(_rub)).thenAnswer((_) async {});
 
         return MainScreenWidgetModel(
           modelData,
@@ -121,12 +120,15 @@ void main() {
         (wm, tester, context) async {
           tester.init();
 
-          when(() => modelData.switchCreditTo(_eurCode)).thenReturn(_usd);
+          when(() => modelData.switchCreditTo(_eur)).thenAnswer(
+            (_) => when(() => modelData.credit).thenReturn(_eur),
+          );
+
           when(() => modelData.fromCreditToDebit(0)).thenReturn(0);
 
           wm.onSelectCredit(_eur);
 
-          verify<void>(() => modelData.switchCreditTo(_eurCode));
+          verify<void>(() => modelData.switchCreditTo(_eur));
 
           expect(
             wm.creditTextFieldState.value?.data?.currencySymbol,
@@ -141,13 +143,15 @@ void main() {
         (wm, tester, context) async {
           tester.init();
 
-          when(() => modelData.switchDebitTo(_eurCode))
-              .thenAnswer((_) => Future.value(_eur));
+          when(() => modelData.switchDebitTo(_eur)).thenAnswer(
+            (_) async => when(() => modelData.debit).thenReturn(_eur),
+          );
+
           when(() => modelData.fromDebitToCredit(0)).thenReturn(0);
 
           wm.onSelectDebit(_eur);
 
-          verify<void>(() => modelData.switchDebitTo(_eurCode));
+          verify<void>(() => modelData.switchDebitTo(_eur));
 
           expect(
             wm.debitTextFieldState.value?.data?.currencySymbol,
@@ -215,7 +219,6 @@ void main() {
           when(modelData.loadData).thenThrow(exception);
 
           tester.init();
-          await Future<void>.delayed(const Duration(seconds: 1));
           wm.onErrorHandle(exception);
 
           expect(wm.debitTextFieldState.value?.error, exception);
@@ -237,7 +240,6 @@ void main() {
           when(modelData.loadData).thenThrow(exception);
 
           tester.init();
-          await Future<void>.delayed(const Duration(seconds: 1));
           wm.onErrorHandle(exception);
 
           expect(wm.debitTextFieldState.value?.error, exception);
