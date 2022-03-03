@@ -16,12 +16,15 @@ IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
       MainScreenModel(MainScreenErrorHandler()),
       TextEditingController(),
       TextEditingController(),
+      ScaffoldMessenger.of(_),
     );
 
 /// Виджет-модель главного экрана
 class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Контроллер текстового поля списания
   final TextEditingController _debitController;
+
+  final ScaffoldMessengerState _scaffoldMessenger;
 
   /// Контроллер текстового поля зачисления
   final TextEditingController _creditController;
@@ -66,6 +69,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     MainScreenModel model,
     this._debitController,
     this._creditController,
+    this._scaffoldMessenger,
   ) : super(model);
 
   @override
@@ -185,7 +189,6 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
         model.fromCreditToDebit,
       );
 
-  
   /// Метод, выполняющий преобразование значения [passiveController] в зависимости от значения [activeController].
   /// Преобразование определяется функцией [transformer]
   void _onTextChange(
@@ -218,8 +221,8 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Метод, отображающий снек-бар с сообщением [message]
   Future<void> _showSnackBarMessage(String message) async {
     WidgetsBinding.instance!.addPostFrameCallback(
-      (timeStamp) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      (_) {
+        _scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(message),
           ),
