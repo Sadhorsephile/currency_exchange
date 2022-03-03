@@ -1,3 +1,7 @@
+import 'package:currency_exchange/core/data/network/client.dart';
+import 'package:currency_exchange/core/data/network/service/get_exchange_rates.dart';
+import 'package:currency_exchange/core/data/repository/currency.dart';
+import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
@@ -7,11 +11,21 @@ import 'package:currency_exchange/resources/dictionary.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 /// Фабрика виджет-модели главного экрана
 IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
     MainScreenWidgetModel(
-      MainScreenModel(MainScreenErrorHandler()),
+      MainScreenModel(
+        CurrenciesUseCasesImpl(
+          CurrencyRepositoryImpl(
+            GetExchangeRatesApiImpl(
+              Provider.of<NetworkClient>(_, listen: false),
+            ),
+          ),
+        ),
+        MainScreenErrorHandler(),
+      ),
       TextEditingController(),
       TextEditingController(),
     );
@@ -136,11 +150,13 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   /// Метод инциализации данных, необходимых для функционирования экрана
-  void _init() {
+  Future<void> _init() async {
     _creditStateNotifier.loading();
     _debitStateNotifier.loading();
 
-    model.loadData().then((_) {
+    try {
+      await model.loadData();
+
       _creditStateNotifier.content(CurrencyTextFieldDto(
         _creditController,
         model.currentCreditCurrency.symbol,
@@ -149,7 +165,15 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
         _debitController,
         model.currentDebitCurrency.symbol,
       ));
-    });
+    } on Exception catch (e) {
+      _debitStateNotifier.error(
+        e,
+        CurrencyTextFieldDto(
+          _debitController,
+          model.currentDebitCurrency.symbol,
+        ),
+      );
+    }
   }
 
   /// Метод, обновляющий содержимое поля зачисления в ответ на изменение содержимого поля списания
@@ -190,9 +214,16 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   /// Метод, отображающий снек-бар с сообщением [message]
-  void _showSnackBarMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+  Future<void> _showSnackBarMessage(String message) async {
+    WidgetsBinding.instance!.addPostFrameCallback(
+      (timeStamp) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+          ),
+        );
+      },
+    );
   }
 }
 

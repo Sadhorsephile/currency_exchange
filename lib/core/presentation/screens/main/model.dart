@@ -1,36 +1,55 @@
 import 'package:currency_exchange/core/domain/entities/currency.dart';
+import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
+import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:elementary/elementary.dart';
 import 'package:flutter/foundation.dart';
 
 /// Модель главного экрана
 class MainScreenModel extends ElementaryModel {
   /// Список доступных валют
-  final currencies = ValueNotifier<List<CurrencyDto>>(_mockCurrencies);
+  final currencies = ValueNotifier<List<CurrencyDto>>([]);
+  final CurrenciesUseCasesImpl _currenciesUseCases;
 
   /// Текущая валюта списания
   CurrencyDto get currentDebitCurrency => _currentDebitCurrency;
+
   /// Текущая валюта зачисления
   CurrencyDto get currentCreditCurrency => _currentCreditCurrency;
 
-  CurrencyDto _currentDebitCurrency = _rub;
-  CurrencyDto _currentCreditCurrency = _usd;
+  late CurrencyDto _currentDebitCurrency;
+  late CurrencyDto _currentCreditCurrency;
 
-  MainScreenModel(ErrorHandler errorHandler)
-      : super(errorHandler: errorHandler);
+  MainScreenModel(
+    this._currenciesUseCases,
+    ErrorHandler errorHandler,
+  ) : super(errorHandler: errorHandler);
+
+  @override
+  void init() {
+    _currentDebitCurrency = _currenciesUseCases.prepopulatedDebit;
+    _currentCreditCurrency = _currenciesUseCases.prepopulatedCredit;
+  }
 
   /// Метод загрузки данных для экрана
-  Future<void> loadData() {
-    return Future<void>.delayed(const Duration(seconds: 2));
+  Future<void> loadData() async {
+    try {
+      final debitToCreditCurrencies = await _currenciesUseCases
+          .getDebitToCreditCurrencies(_currentDebitCurrency.code);
+      currencies.value = debitToCreditCurrencies.allCurrencies;
+      
+      _currentDebitCurrency = debitToCreditCurrencies.debitCurrency;
+      _currentCreditCurrency = debitToCreditCurrencies.creditCurrencies
+          .getByCode(_currentCreditCurrency.code);
+    } on Exception catch (e) {
+      handleError(e);
+      rethrow;
+    }
   }
 
   /// Метод, меняющий текущую валюту зачисления на валюту, имеющую код [currencyCode]
   void switchCreditTo(String currencyCode) {
     try {
-      _currentCreditCurrency = currencies.value.firstWhere(
-        (e) => e.code == currencyCode,
-        orElse: () =>
-            throw Exception('There are no currency with code: $currencyCode'),
-      );
+      _currentCreditCurrency = currencies.value.getByCode(currencyCode);
     } on Exception catch (e) {
       handleError(e);
     }
@@ -39,12 +58,8 @@ class MainScreenModel extends ElementaryModel {
   /// Метод, меняющий текущую валюту списания на валюту, имеющую код [currencyCode]
   Future<void> switchDebitTo(String currencyCode) async {
     try {
-      _currentDebitCurrency = currencies.value.firstWhere(
-        (e) => e.code == currencyCode,
-        orElse: () =>
-            throw Exception('There are no currency with code: $currencyCode'),
-      );
-      await Future<void>.delayed(const Duration(seconds: 2));
+      _currentDebitCurrency = currencies.value.getByCode(currencyCode);
+      await loadData();
     } on Exception catch (e) {
       handleError(e);
     }
@@ -60,43 +75,3 @@ class MainScreenModel extends ElementaryModel {
     return credit / _currentDebitCurrency[_currentCreditCurrency];
   }
 }
-
-const _rubCode = 'RUB';
-const _usdCode = 'USD';
-const _eurCode = 'EUR';
-
-final _rub = CurrencyDto(
-  title: 'Rub',
-  symbol: '₽',
-  code: _rubCode,
-  codeToValueExchangeRates: {
-    _usdCode: 1 / 120,
-    _eurCode: 1 / 200,
-  },
-);
-
-final _usd = CurrencyDto(
-  title: 'Usd',
-  symbol: r'$',
-  code: _usdCode,
-  codeToValueExchangeRates: {
-    _rubCode: 120,
-    _eurCode: 120 / 200,
-  },
-);
-
-final _eur = CurrencyDto(
-  title: 'Eur',
-  symbol: '€',
-  code: _eurCode,
-  codeToValueExchangeRates: {
-    _rubCode: 200,
-    _usdCode: 200 / 120,
-  },
-);
-
-final _mockCurrencies = [
-  _rub,
-  _usd,
-  _eur,
-];
