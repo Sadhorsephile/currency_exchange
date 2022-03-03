@@ -1,12 +1,16 @@
 import 'package:currency_exchange/core/domain/entities/currency.dart';
-import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
+import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
 import 'package:elementary/elementary.dart';
 
 /// Модель главного экрана
 class MainScreenModel extends ElementaryModel {
-  /// Список доступных валют
-  final CurrenciesUseCasesImpl _currenciesUseCases;
+  final CurrenciesUseCases _currenciesUseCases;
+
+  CurrencyDto get debit => _currentDebitCurrency;
+  CurrencyDto get credit => _currentCreditCurrency;
+  List<CurrencyDto> get currencies => _currencies;
+
 
   late CurrencyDto _currentDebitCurrency;
   late CurrencyDto _currentCreditCurrency;
@@ -20,50 +24,40 @@ class MainScreenModel extends ElementaryModel {
 
   @override
   void init() {
-    _currentDebitCurrency = getInitialDebit();
-    _currentCreditCurrency = getInitialCredit();
+    // TODO: брать из интерактора
+    _currentDebitCurrency = _currenciesUseCases.prepopulatedDebit;
+    _currentCreditCurrency = _currenciesUseCases.prepopulatedCredit;
   }
 
-  CurrencyDto getInitialDebit() => _currenciesUseCases.prepopulatedDebit;
-  CurrencyDto getInitialCredit() => _currenciesUseCases.prepopulatedCredit;
-
-  /// Метод загрузки данных для экрана
-  Future<List<CurrencyDto>> loadData() async {
+  /// Метод загрузки данных для wm.
+  /// Осуществляет загрузку данных (курс валюты списания к остальным валютам)
+  /// на основе текущей валюты списания [debit].
+  ///
+  /// Обновляет содержимое полей [debit], [credit] и [currencies].
+  Future<void> loadData() async {
     try {
-      final debitToCreditCurrencies = await _currenciesUseCases
-          .getDebitToCreditCurrencies(_currentDebitCurrency.code);
-      _currencies = debitToCreditCurrencies.allCurrencies;
-      
-      _currentDebitCurrency = debitToCreditCurrencies.debitCurrency;
-      _currentCreditCurrency = debitToCreditCurrencies.creditCurrencies
-          .getByCode(_currentCreditCurrency.code);
-      return _currencies;
+      // TODO: грузить данные из интерактора
+      final data = await _currenciesUseCases.getDebitToCreditCurrencies(_currentDebitCurrency.code);
+      _currencies = data.allCurrencies;
+      _currentDebitCurrency = data.debitCurrency;
+      _currentCreditCurrency = data.allCurrencies.getByCode(_currentCreditCurrency.code);
     } on Exception catch (e) {
       handleError(e);
       rethrow;
     }
   }
 
-  /// Метод, меняющий текущую валюту зачисления на валюту, имеющую код [currencyCode]
-  CurrencyDto switchCreditTo(String currencyCode) {
-    try {
-      return _currentCreditCurrency = _currencies.getByCode(currencyCode);
-    } on Exception catch (e) {
-      handleError(e);
-      rethrow;
-    }
+  /// Метод, меняющий текущую валюту зачисления [credit] на [currency]
+  // ignore: use_setters_to_change_properties
+  void switchCreditTo(CurrencyDto currency) {
+    _currentCreditCurrency = currency;
   }
 
-  /// Метод, меняющий текущую валюту списания на валюту, имеющую код [currencyCode]
-  Future<CurrencyDto> switchDebitTo(String currencyCode) async {
-    try {
-      _currentDebitCurrency = _currencies.getByCode(currencyCode);
-      await loadData();
-      return _currentDebitCurrency;
-    } on Exception catch (e) {
-      handleError(e);
-      rethrow;
-    }
+  /// Метод, меняющий текущую валюту списания [debit] на [currency].
+  /// После замены валюты списания осуществляет обновление данных (курс валюты списания к остальным валютам)
+  Future<void> switchDebitTo(CurrencyDto currency) async {
+    _currentDebitCurrency = currency;
+    await loadData();
   }
 
   /// Метод преобразования из валюты списания в валюту зачисления
