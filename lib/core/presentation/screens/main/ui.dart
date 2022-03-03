@@ -76,7 +76,7 @@ class _CurrencyTextBox extends StatelessWidget {
   final ListenableState<EntityState<CurrencyTextFieldDto>> textFieldState;
   final TextInputFormatter inputFormatter;
   final VoidCallback onRefreshIconPressed;
-  final Function(CurrencyDto) onSelect;
+  final ValueChanged<CurrencyDto> onSelect;
   final ValueListenable<List<CurrencyDto>> currencies;
   final String hint;
 
@@ -122,7 +122,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   final TextInputFormatter? inputFormatter;
   final String? hint;
   final String? errorMessage;
-  final Function(CurrencyDto)? onSelect;
+  final ValueChanged<CurrencyDto>? onSelect;
   final ValueListenable<List<CurrencyDto>>? currencies;
   final VoidCallback? onRefreshIconPressed;
 
@@ -142,7 +142,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   /// Текстовое поле с валютой, доступное для редактирования
   factory _CurrencyTextBoxContent.data({
     required TextInputFormatter inputFormatter,
-    required Function(CurrencyDto) onSelect,
+    required ValueChanged<CurrencyDto> onSelect,
     required ValueListenable<List<CurrencyDto>> currencies,
     CurrencyTextFieldDto? state,
     String? hint,
@@ -164,7 +164,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   factory _CurrencyTextBoxContent.error({
     required TextInputFormatter inputFormatter,
     required String errorMessage,
-    required Function(CurrencyDto) onSelect,
+    required ValueChanged<CurrencyDto> onSelect,
     required ValueListenable<List<CurrencyDto>> currencies,
     required VoidCallback onRefreshIconPressed,
     CurrencyTextFieldDto? state,
