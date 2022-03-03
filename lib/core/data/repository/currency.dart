@@ -1,5 +1,5 @@
 import 'package:currency_exchange/core/data/adapter/currency.dart';
-import 'package:currency_exchange/core/data/network/models/currency.dart';
+import 'package:currency_exchange/core/data/network/service/get_exchange_rates.dart';
 import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/resources/currencies.dart';
 
@@ -7,6 +7,7 @@ import 'package:currency_exchange/resources/currencies.dart';
 abstract class CurrencyRepository {
   /// Возвращает изначальную валюту зачисления
   CurrencyDto get prepopulatedCredit;
+
   /// Возвращает изначальную валюту списания
   CurrencyDto get prepopulatedDebit;
 
@@ -18,38 +19,33 @@ abstract class CurrencyRepository {
 }
 
 class CurrencyRepositoryImpl implements CurrencyRepository {
+  final GetExchangeRatesApi _getExchangeRatesApi;
+
   @override
   CurrencyDto get prepopulatedCredit => CurrencyDto.fromCode(_usdCode);
 
   @override
   CurrencyDto get prepopulatedDebit => CurrencyDto.fromCode(_rubCode);
 
+  CurrencyRepositoryImpl(this._getExchangeRatesApi);
+
   @override
   Future<DebitToCreditCurrenciesDto> getDebitToCreditCurrencies(
     String code,
   ) async {
-    await Future<void>.delayed(const Duration(seconds: 2));
+    final _currencyWithRates = await _getExchangeRatesApi(code);
 
     final debitStaticInfo = CurrenciesStaticInfo.list.getByCode(code);
 
     final debit =
-        debitStaticInfo.toCurrencyDto(_mockCurrencyFromNetwork.exchangeRates);
+        debitStaticInfo.toCurrencyDto(_currencyWithRates.exchangeRates);
 
     final credits = CurrenciesStaticInfo.list
-        .getCurrenciesWithInfo(_mockCurrencyFromNetwork.exchangeRates.keys);
+        .getCurrenciesWithInfo(_currencyWithRates.exchangeRates.keys);
 
     return DebitToCreditCurrenciesDto(debit, credits);
   }
 }
 
-final _mockCurrencyFromNetwork = CurrencyNetworkDto(
-  'RUB',
-  {
-    'USD': 100,
-    'EUR': 200,
-    'SYP': 0.2,
-  },
-);
-
-const _rubCode = 'RUB';
+const _rubCode = 'EUR';
 const _usdCode = 'USD';
