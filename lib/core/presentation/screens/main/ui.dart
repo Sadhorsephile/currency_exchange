@@ -1,8 +1,10 @@
+import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:currency_exchange/core/presentation/screens/main/wmodel.dart';
 import 'package:currency_exchange/resources/colors.dart';
 import 'package:elementary/elementary.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
@@ -74,8 +76,8 @@ class _CurrencyTextBox extends StatelessWidget {
   final ListenableState<EntityState<CurrencyTextFieldDto>> textFieldState;
   final TextInputFormatter inputFormatter;
   final VoidCallback onRefreshIconPressed;
-  final Function(CurrencyInfoDto) onSelect;
-  final List<CurrencyInfoDto> currencies;
+  final ValueChanged<CurrencyDto> onSelect;
+  final ValueListenable<List<CurrencyDto>> currencies;
   final String hint;
 
   const _CurrencyTextBox({
@@ -107,6 +109,7 @@ class _CurrencyTextBox extends StatelessWidget {
         errorMessage: ex.asUserError,
         onSelect: onSelect,
         currencies: currencies,
+        onRefreshIconPressed: onRefreshIconPressed,
       ),
     );
   }
@@ -119,14 +122,16 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   final TextInputFormatter? inputFormatter;
   final String? hint;
   final String? errorMessage;
-  final Function(CurrencyInfoDto)? onSelect;
-  final List<CurrencyInfoDto>? currencies;
+  final ValueChanged<CurrencyDto>? onSelect;
+  final ValueListenable<List<CurrencyDto>>? currencies;
+  final VoidCallback? onRefreshIconPressed;
 
   const _CurrencyTextBoxContent({
     required this.isLoading,
     this.onSelect,
     this.currencies,
     this.inputFormatter,
+    this.onRefreshIconPressed,
     this.hint,
     this.errorMessage,
     Key? key,
@@ -137,8 +142,8 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   /// Текстовое поле с валютой, доступное для редактирования
   factory _CurrencyTextBoxContent.data({
     required TextInputFormatter inputFormatter,
-    required Function(CurrencyInfoDto) onSelect,
-    required List<CurrencyInfoDto> currencies,
+    required ValueChanged<CurrencyDto> onSelect,
+    required ValueListenable<List<CurrencyDto>> currencies,
     CurrencyTextFieldDto? state,
     String? hint,
   }) =>
@@ -159,8 +164,9 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   factory _CurrencyTextBoxContent.error({
     required TextInputFormatter inputFormatter,
     required String errorMessage,
-    required Function(CurrencyInfoDto) onSelect,
-    required List<CurrencyInfoDto> currencies,
+    required ValueChanged<CurrencyDto> onSelect,
+    required ValueListenable<List<CurrencyDto>> currencies,
+    required VoidCallback onRefreshIconPressed,
     CurrencyTextFieldDto? state,
     String? hint,
   }) =>
@@ -172,6 +178,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
         currencies: currencies,
         inputFormatter: inputFormatter,
         errorMessage: errorMessage,
+        onRefreshIconPressed: onRefreshIconPressed,
       );
 
   @override
@@ -213,9 +220,12 @@ class _CurrencyTextBoxContent extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 5),
-              const Icon(
-                Icons.refresh,
-                color: AppColors.refreshIconColor,
+              GestureDetector(
+                onTap: onRefreshIconPressed,
+                child: const Icon(
+                  Icons.refresh,
+                  color: AppColors.refreshIconColor,
+                ),
               ),
             ],
           ),
