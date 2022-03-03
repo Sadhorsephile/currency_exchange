@@ -6,7 +6,7 @@ class CurrencyDto {
   final String code;
   final String title;
   final String symbol;
-  final Map<String, double> codeToValueExchangeRates;
+  final Map<String, num> codeToValueExchangeRates;
 
   CurrencyDto({
     required this.code,
@@ -36,7 +36,7 @@ class CurrencyDto {
         codeToValueExchangeRates: {},
       );
 
-  double operator [](CurrencyDto anotherCurrency) {
+  num operator [](CurrencyDto anotherCurrency) {
     if (!codeToValueExchangeRates.containsKey(anotherCurrency.code)) {
       throw Exception('No currency with code: ${anotherCurrency.code}');
     }

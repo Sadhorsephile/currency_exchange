@@ -3,7 +3,7 @@ import 'dart:convert';
 /// Дата-класс валюты, хранящий информацию о коде валюты и ее отношении к другим валютам
 class CurrencyNetworkDto {
   final String code;
-  final Map<String, double> exchangeRates;
+  final Map<String, num> exchangeRates;
 
   CurrencyNetworkDto(this.code, this.exchangeRates);
 
@@ -15,7 +15,7 @@ class CurrencyNetworkDto {
   factory CurrencyNetworkDto.fromMap(Map<String, dynamic> map) {
     return CurrencyNetworkDto(
       (map['base'] ?? '').toString(),
-      Map<String, double>.from(map['rates'] as Map<String, double>),
+      Map<String, num>.from(map['rates'] as Map<String, dynamic>),
     );
   }
 
