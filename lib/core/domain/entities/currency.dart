@@ -41,11 +41,15 @@ class CurrencyDto {
   }
 }
 
+/// Дата-класс, содержащий в себе основную валюту и список валют,
+/// к которым она имеет определенное отношение
 class DebitToCreditCurrenciesContainer {
   final CurrencyDto debitCurrency;
   final List<CurrencyDto> creditCurrencies;
+  late final List<CurrencyDto> allCurrencies; 
 
-  List<CurrencyDto> get allCurrencies => [debitCurrency, ...creditCurrencies];
 
-  DebitToCreditCurrenciesContainer(this.debitCurrency, this.creditCurrencies);
+  DebitToCreditCurrenciesContainer(this.debitCurrency, this.creditCurrencies) {
+    allCurrencies = [debitCurrency, ...creditCurrencies];
+  }
 }
