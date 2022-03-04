@@ -1,9 +1,10 @@
 import 'package:currency_exchange/core/domain/entities/currency.dart';
 
-
 abstract class CurrenciesUseCases {
   CurrencyDto get prepopulatedDebit;
+
   CurrencyDto get prepopulatedCredit;
+
   Future<DebitToCreditCurrenciesContainer> getDebitToCreditCurrencies(
     String code,
   );

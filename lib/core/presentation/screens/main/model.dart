@@ -1,5 +1,5 @@
 import 'package:currency_exchange/core/domain/entities/currency.dart';
-import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
+import 'package:currency_exchange/core/interactor/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:elementary/elementary.dart';
 
