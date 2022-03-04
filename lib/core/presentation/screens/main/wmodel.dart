@@ -3,7 +3,7 @@ import 'package:currency_exchange/core/data/network/client.dart';
 import 'package:currency_exchange/core/data/network/service/get_exchange_rates.dart';
 import 'package:currency_exchange/core/data/repository/currency.dart';
 import 'package:currency_exchange/core/domain/entities/currency.dart';
-import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
+import 'package:currency_exchange/core/interactor/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:currency_exchange/core/presentation/screens/main/modal.dart';
