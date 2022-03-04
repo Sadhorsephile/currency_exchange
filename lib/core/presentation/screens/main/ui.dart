@@ -1,11 +1,9 @@
-import 'package:currency_exchange/core/domain/entities/currency.dart';
+
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
-import 'package:currency_exchange/core/presentation/screens/main/modal.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:currency_exchange/core/presentation/screens/main/wmodel.dart';
 import 'package:currency_exchange/resources/colors.dart';
 import 'package:elementary/elementary.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
@@ -21,8 +19,7 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
       hint: wm.debitHint,
       inputFormatter: wm.inputFormatter,
       onRefreshIconPressed: wm.onRetryPressed,
-      currencies: wm.currencies,
-      onSelect: wm.onSelectDebit,
+      onSelectCurrencyBtnPressed: wm.openSelectDebitModalSheet,
     );
 
     final credit = _CurrencyTextBox(
@@ -30,8 +27,7 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
       hint: wm.creditHint,
       inputFormatter: wm.inputFormatter,
       onRefreshIconPressed: wm.onRetryPressed,
-      currencies: wm.currencies,
-      onSelect: wm.onSelectCredit,
+      onSelectCurrencyBtnPressed: wm.openSelectCreditModalSheet,
     );
 
     return OrientationBuilder(
@@ -77,8 +73,7 @@ class _CurrencyTextBox extends StatelessWidget {
   final ListenableState<EntityState<CurrencyTextFieldDto>> textFieldState;
   final TextInputFormatter inputFormatter;
   final VoidCallback onRefreshIconPressed;
-  final ValueChanged<CurrencyDto> onSelect;
-  final ValueListenable<List<CurrencyDto>> currencies;
+  final VoidCallback onSelectCurrencyBtnPressed;
   final String hint;
 
   const _CurrencyTextBox({
@@ -86,8 +81,7 @@ class _CurrencyTextBox extends StatelessWidget {
     required this.hint,
     required this.inputFormatter,
     required this.onRefreshIconPressed,
-    required this.onSelect,
-    required this.currencies,
+    required this.onSelectCurrencyBtnPressed,
     Key? key,
   }) : super(key: key);
 
@@ -100,17 +94,15 @@ class _CurrencyTextBox extends StatelessWidget {
         state: state,
         inputFormatter: inputFormatter,
         hint: hint,
-        onSelect: onSelect,
-        currencies: currencies,
+        onSelectCurrencyBtnPressed: onSelectCurrencyBtnPressed,
       ),
       errorBuilder: (_, ex, state) => _CurrencyTextBoxContent.error(
         state: state,
         inputFormatter: inputFormatter,
         hint: hint,
         errorMessage: ex.asUserError,
-        onSelect: onSelect,
-        currencies: currencies,
         onRefreshIconPressed: onRefreshIconPressed,
+        onSelectCurrencyBtnPressed: onSelectCurrencyBtnPressed,
       ),
     );
   }
@@ -123,36 +115,32 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   final TextInputFormatter? inputFormatter;
   final String? hint;
   final String? errorMessage;
-  final ValueChanged<CurrencyDto>? onSelect;
-  final ValueListenable<List<CurrencyDto>>? currencies;
   final VoidCallback? onRefreshIconPressed;
+  final VoidCallback? onSelectCurrencyBtnPressed;
 
   const _CurrencyTextBoxContent({
     required this.isLoading,
-    this.onSelect,
-    this.currencies,
     this.inputFormatter,
     this.onRefreshIconPressed,
+    this.onSelectCurrencyBtnPressed,
     this.hint,
     this.errorMessage,
     Key? key,
     this.state,
-  })  : assert(isLoading || (onSelect != null && currencies != null)),
+  })  : assert(isLoading || onSelectCurrencyBtnPressed != null),
         super(key: key);
 
   /// Текстовое поле с валютой, доступное для редактирования
   factory _CurrencyTextBoxContent.data({
     required TextInputFormatter inputFormatter,
-    required ValueChanged<CurrencyDto> onSelect,
-    required ValueListenable<List<CurrencyDto>> currencies,
+    required VoidCallback onSelectCurrencyBtnPressed,
     CurrencyTextFieldDto? state,
     String? hint,
   }) =>
       _CurrencyTextBoxContent(
         isLoading: false,
         state: state,
-        onSelect: onSelect,
-        currencies: currencies,
+        onSelectCurrencyBtnPressed: onSelectCurrencyBtnPressed,
         hint: hint,
         inputFormatter: inputFormatter,
       );
@@ -165,9 +153,8 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   factory _CurrencyTextBoxContent.error({
     required TextInputFormatter inputFormatter,
     required String errorMessage,
-    required ValueChanged<CurrencyDto> onSelect,
-    required ValueListenable<List<CurrencyDto>> currencies,
     required VoidCallback onRefreshIconPressed,
+    required VoidCallback onSelectCurrencyBtnPressed,
     CurrencyTextFieldDto? state,
     String? hint,
   }) =>
@@ -175,8 +162,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
         isLoading: false,
         state: state,
         hint: hint,
-        onSelect: onSelect,
-        currencies: currencies,
+        onSelectCurrencyBtnPressed: onSelectCurrencyBtnPressed,
         inputFormatter: inputFormatter,
         errorMessage: errorMessage,
         onRefreshIconPressed: onRefreshIconPressed,
@@ -190,13 +176,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
             padding: const EdgeInsets.all(5),
             child: _RoundCurrencyButton(
               label: state!.currencySymbol,
-              onPressed: () {
-                SelectCurrencyModalBottomSheet.show(
-                  context,
-                  currencies!,
-                  onSelect!,
-                );
-              },
+              onPressed: onSelectCurrencyBtnPressed!,
             ),
           );
 

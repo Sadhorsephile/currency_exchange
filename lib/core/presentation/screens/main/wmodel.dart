@@ -6,6 +6,7 @@ import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
+import 'package:currency_exchange/core/presentation/screens/main/modal.dart';
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
@@ -115,6 +116,24 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   @override
   void onRetryPressed() {
     _init();
+  }
+
+  @override
+  void openSelectDebitModalSheet() {
+    SelectCurrencyModalBottomSheet.show(
+      context,
+      currencies,
+      onSelectCredit,
+    );
+  }
+
+  @override
+  void openSelectCreditModalSheet() {
+    SelectCurrencyModalBottomSheet.show(
+      context,
+      currencies,
+      onSelectDebit,
+    );
   }
 
   @override
@@ -272,6 +291,10 @@ abstract class IMainScreenWidgetModel
 
   /// Метод, инициирующий перезагрузку данных на странице
   void onRetryPressed();
+
+  void openSelectDebitModalSheet();
+
+  void openSelectCreditModalSheet();
 
   /// Метод, вызываемый в момент выбора валюты списания для конвертации
   void onSelectDebit(CurrencyDto currency);
