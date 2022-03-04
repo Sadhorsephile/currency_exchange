@@ -22,10 +22,16 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
   final GetExchangeRatesApi _getExchangeRatesApi;
 
   @override
-  CurrencyDto get prepopulatedCredit => CurrencyDto.fromCode(_usdCode);
+  CurrencyDto get prepopulatedCredit => CurrencyDto.fromCodeAndSymbol(
+        _usdCode,
+        CurrenciesStaticInfo.list.getSymbolByCode(_usdCode),
+      );
 
   @override
-  CurrencyDto get prepopulatedDebit => CurrencyDto.fromCode(_rubCode);
+  CurrencyDto get prepopulatedDebit => CurrencyDto.fromCodeAndSymbol(
+        _rubCode,
+        CurrenciesStaticInfo.list.getSymbolByCode(_rubCode),
+      );
 
   CurrencyRepositoryImpl(this._getExchangeRatesApi);
 
