@@ -1,10 +1,14 @@
 import 'package:currency_exchange/core/domain/entities/currency.dart';
 
+/// Класс, представляющий набор интеракторов для получения данных о валюте
 abstract class CurrenciesUseCases {
   CurrencyDto get prepopulatedDebit;
 
+  /// Возвращает изначальную валюту зачисления
   CurrencyDto get prepopulatedCredit;
 
+  /// Возвращает основную валюту [CurrencyDto], имеющую [CurrencyDto.code] = [code] и список валют,
+  /// к которым основная валюта имеет определенная отношение
   Future<DebitToCreditCurrenciesContainer> getDebitToCreditCurrencies(
     String code,
   );
