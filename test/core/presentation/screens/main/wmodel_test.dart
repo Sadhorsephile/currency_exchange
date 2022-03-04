@@ -39,6 +39,8 @@ void main() {
         when(() => modelData.credit).thenReturn(_initialCreditCurrency);
         when(() => modelData.currencies).thenReturn(_mockCurrencies);
         when(() => modelData.switchDebitTo(_rub)).thenAnswer((_) async {});
+        when(() => modelData.fromDebitToCredit(0)).thenReturn(0);
+        when(() => modelData.fromCreditToDebit(0)).thenReturn(0);
 
         return MainScreenWidgetModel(
           modelData,
@@ -75,8 +77,7 @@ void main() {
         (wm, tester, context) async {
           tester.init();
 
-          await modelData.loadData();
-
+          await untilCalled(modelData.loadData);
           expect(
             wm.creditTextFieldState.value?.data?.currencySymbol,
             _initialCreditCurrency.symbol,
@@ -124,8 +125,6 @@ void main() {
             (_) => when(() => modelData.credit).thenReturn(_eur),
           );
 
-          when(() => modelData.fromCreditToDebit(0)).thenReturn(0);
-
           wm.onSelectCredit(_eur);
 
           verify<void>(() => modelData.switchCreditTo(_eur));
@@ -147,8 +146,6 @@ void main() {
             (_) async => when(() => modelData.debit).thenReturn(_eur),
           );
 
-          when(() => modelData.fromDebitToCredit(0)).thenReturn(0);
-
           wm.onSelectDebit(_eur);
 
           verify<void>(() => modelData.switchDebitTo(_eur));
@@ -166,9 +163,7 @@ void main() {
         (wm, tester, context) async {
           tester.init();
 
-          when(() => modelData.fromDebitToCredit(0)).thenReturn(0);
-
-          await modelData.loadData();
+          await untilCalled(modelData.loadData);
 
           expect(
             wm.creditTextFieldState.value?.data?.currencySymbol,
@@ -190,10 +185,7 @@ void main() {
         setupWm,
         (wm, tester, context) async {
           tester.init();
-
-          when(() => modelData.fromCreditToDebit(0)).thenReturn(0);
-
-          await modelData.loadData();
+          await untilCalled(modelData.loadData);
 
           expect(
             wm.debitTextFieldState.value?.data?.currencySymbol,
