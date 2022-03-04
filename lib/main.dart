@@ -1,5 +1,6 @@
 import 'package:currency_exchange/core/data/network/client.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
+import 'package:currency_exchange/resources/currencies.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +8,7 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NetworkClient.initCacheOptions();
+  await CurrenciesStaticInfo.loadFromJson();
   runApp(const MyApp());
 }
 
