@@ -7,6 +7,7 @@ import 'package:currency_exchange/resources/currencies.dart';
 abstract class CurrencyRepository {
   /// Возвращает изначальную валюту зачисления
   CurrencyDto get prepopulatedCredit;
+
   /// Возвращает изначальную валюту списания
   CurrencyDto get prepopulatedDebit;
 
@@ -19,10 +20,16 @@ abstract class CurrencyRepository {
 
 class CurrencyRepositoryImpl implements CurrencyRepository {
   @override
-  CurrencyDto get prepopulatedCredit => CurrencyDto.fromCode(_usdCode);
+  CurrencyDto get prepopulatedCredit => CurrencyDto.fromCodeAndSymbol(
+        _usdCode,
+        CurrenciesStaticInfo.list.getSymbolByCode(_usdCode),
+      );
 
   @override
-  CurrencyDto get prepopulatedDebit => CurrencyDto.fromCode(_rubCode);
+  CurrencyDto get prepopulatedDebit => CurrencyDto.fromCodeAndSymbol(
+        _rubCode,
+        CurrenciesStaticInfo.list.getSymbolByCode(_rubCode),
+      );
 
   @override
   Future<DebitToCreditCurrenciesDto> getDebitToCreditCurrencies(
