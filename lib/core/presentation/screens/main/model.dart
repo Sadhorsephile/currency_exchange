@@ -1,5 +1,5 @@
 import 'package:currency_exchange/core/domain/entities/currency.dart';
-import 'package:currency_exchange/core/domain/usecases/get_exchange_rates.dart';
+import 'package:currency_exchange/core/interactor/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:elementary/elementary.dart';
 
@@ -10,7 +10,6 @@ class MainScreenModel extends ElementaryModel {
   CurrencyDto get debit => _currentDebitCurrency;
   CurrencyDto get credit => _currentCreditCurrency;
   List<CurrencyDto> get currencies => _currencies;
-
 
   late CurrencyDto _currentDebitCurrency;
   late CurrencyDto _currentCreditCurrency;
@@ -35,10 +34,12 @@ class MainScreenModel extends ElementaryModel {
   /// Обновляет содержимое полей [debit], [credit] и [currencies].
   Future<void> loadData() async {
     try {
-      final data = await _currenciesUseCases.getDebitToCreditCurrencies(_currentDebitCurrency.code);
+      final data = await _currenciesUseCases
+          .getDebitToCreditCurrencies(_currentDebitCurrency.code);
       _currencies = data.allCurrencies;
       _currentDebitCurrency = data.debitCurrency;
-      _currentCreditCurrency = data.allCurrencies.getByCode(_currentCreditCurrency.code);
+      _currentCreditCurrency =
+          data.allCurrencies.getByCode(_currentCreditCurrency.code);
     } on Exception catch (e) {
       handleError(e);
       rethrow;
