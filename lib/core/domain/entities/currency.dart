@@ -48,8 +48,9 @@ class CurrencyDto {
 class DebitToCreditCurrenciesDto {
   final CurrencyDto debitCurrency;
   final List<CurrencyDto> creditCurrencies;
+  late final List<CurrencyDto> allCurrencies;
 
-  List<CurrencyDto> get allCurrencies => [debitCurrency, ...creditCurrencies];
-
-  DebitToCreditCurrenciesDto(this.debitCurrency, this.creditCurrencies);
+  DebitToCreditCurrenciesDto(this.debitCurrency, this.creditCurrencies) {
+    allCurrencies = [debitCurrency, ...creditCurrencies];
+  }
 }
