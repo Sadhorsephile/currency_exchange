@@ -28,4 +28,6 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
+  assets:
+      - assets/json/currencies.json
   uses-material-design: true
