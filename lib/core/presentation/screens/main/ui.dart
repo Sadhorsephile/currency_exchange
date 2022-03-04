@@ -1,7 +1,10 @@
+import 'package:currency_exchange/core/domain/entities/currency.dart';
+import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
 import 'package:currency_exchange/core/presentation/screens/main/wmodel.dart';
 import 'package:currency_exchange/resources/colors.dart';
 import 'package:elementary/elementary.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
@@ -16,12 +19,18 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
       textFieldState: wm.debitTextFieldState,
       hint: wm.debitHint,
       inputFormatter: wm.inputFormatter,
+      onRefreshIconPressed: wm.onRetryPressed,
+      currencies: wm.currencies,
+      onSelect: wm.onSelectDebit,
     );
 
     final credit = _CurrencyTextBox(
       textFieldState: wm.creditTextFieldState,
       hint: wm.creditHint,
       inputFormatter: wm.inputFormatter,
+      onRefreshIconPressed: wm.onRetryPressed,
+      currencies: wm.currencies,
+      onSelect: wm.onSelectCredit,
     );
 
     return OrientationBuilder(
@@ -66,12 +75,18 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
 class _CurrencyTextBox extends StatelessWidget {
   final ListenableState<EntityState<CurrencyTextFieldDto>> textFieldState;
   final TextInputFormatter inputFormatter;
+  final VoidCallback onRefreshIconPressed;
+  final ValueChanged<CurrencyDto> onSelect;
+  final ValueListenable<List<CurrencyDto>> currencies;
   final String hint;
 
   const _CurrencyTextBox({
     required this.textFieldState,
     required this.hint,
     required this.inputFormatter,
+    required this.onRefreshIconPressed,
+    required this.onSelect,
+    required this.currencies,
     Key? key,
   }) : super(key: key);
 
@@ -84,12 +99,17 @@ class _CurrencyTextBox extends StatelessWidget {
         state: state,
         inputFormatter: inputFormatter,
         hint: hint,
+        onSelect: onSelect,
+        currencies: currencies,
       ),
       errorBuilder: (_, ex, state) => _CurrencyTextBoxContent.error(
         state: state,
         inputFormatter: inputFormatter,
         hint: hint,
         errorMessage: ex.asUserError,
+        onSelect: onSelect,
+        currencies: currencies,
+        onRefreshIconPressed: onRefreshIconPressed,
       ),
     );
   }
@@ -102,25 +122,36 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   final TextInputFormatter? inputFormatter;
   final String? hint;
   final String? errorMessage;
+  final ValueChanged<CurrencyDto>? onSelect;
+  final ValueListenable<List<CurrencyDto>>? currencies;
+  final VoidCallback? onRefreshIconPressed;
 
   const _CurrencyTextBoxContent({
     required this.isLoading,
+    this.onSelect,
+    this.currencies,
     this.inputFormatter,
+    this.onRefreshIconPressed,
     this.hint,
     this.errorMessage,
     Key? key,
     this.state,
-  }) : super(key: key);
+  })  : assert(isLoading || (onSelect != null && currencies != null)),
+        super(key: key);
 
   /// Текстовое поле с валютой, доступное для редактирования
   factory _CurrencyTextBoxContent.data({
     required TextInputFormatter inputFormatter,
+    required ValueChanged<CurrencyDto> onSelect,
+    required ValueListenable<List<CurrencyDto>> currencies,
     CurrencyTextFieldDto? state,
     String? hint,
   }) =>
       _CurrencyTextBoxContent(
         isLoading: false,
         state: state,
+        onSelect: onSelect,
+        currencies: currencies,
         hint: hint,
         inputFormatter: inputFormatter,
       );
@@ -133,6 +164,9 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   factory _CurrencyTextBoxContent.error({
     required TextInputFormatter inputFormatter,
     required String errorMessage,
+    required ValueChanged<CurrencyDto> onSelect,
+    required ValueListenable<List<CurrencyDto>> currencies,
+    required VoidCallback onRefreshIconPressed,
     CurrencyTextFieldDto? state,
     String? hint,
   }) =>
@@ -140,17 +174,23 @@ class _CurrencyTextBoxContent extends StatelessWidget {
         isLoading: false,
         state: state,
         hint: hint,
+        onSelect: onSelect,
+        currencies: currencies,
         inputFormatter: inputFormatter,
         errorMessage: errorMessage,
+        onRefreshIconPressed: onRefreshIconPressed,
       );
 
   @override
   Widget build(BuildContext context) {
-    final suffixIcon = state?.currencySymbol == null
+    final suffixIcon = state?.currencySymbol == null || isLoading
         ? null
         : Padding(
             padding: const EdgeInsets.all(5),
-            child: _RoundCurrencyButton(label: state!.currencySymbol),
+            child: _RoundCurrencyButton(
+              label: state!.currencySymbol,
+              onPressed: () {},
+            ),
           );
 
     final textFieldWithButton = TextField(
@@ -180,9 +220,12 @@ class _CurrencyTextBoxContent extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 5),
-              const Icon(
-                Icons.refresh,
-                color: AppColors.refreshIconColor,
+              GestureDetector(
+                onTap: onRefreshIconPressed,
+                child: const Icon(
+                  Icons.refresh,
+                  color: AppColors.refreshIconColor,
+                ),
               ),
             ],
           ),
@@ -202,8 +245,13 @@ class _CurrencyTextBoxContent extends StatelessWidget {
 /// Кнопка переключения валюты
 class _RoundCurrencyButton extends StatelessWidget {
   final String label;
+  final VoidCallback onPressed;
 
-  const _RoundCurrencyButton({required this.label, Key? key}) : super(key: key);
+  const _RoundCurrencyButton({
+    required this.label,
+    required this.onPressed,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +259,7 @@ class _RoundCurrencyButton extends StatelessWidget {
       child: Material(
         color: Colors.blue,
         child: InkWell(
-          onTap: () {},
+          onTap: onPressed,
           child: Container(
             alignment: Alignment.center,
             width: 35,
