@@ -5,6 +5,7 @@ import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/core/interactor/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
+import 'package:currency_exchange/core/presentation/screens/main/modal.dart';
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
@@ -110,6 +111,24 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   @override
   void onRetryPressed() {
     _init();
+  }
+
+  @override
+  void openSelectCreditModalSheet() {
+    SelectCurrencyModalBottomSheet.show(
+      context,
+      currencies,
+      onSelectCredit,
+    );
+  }
+
+  @override
+  void openSelectDebitModalSheet() {
+    SelectCurrencyModalBottomSheet.show(
+      context,
+      currencies,
+      onSelectDebit,
+    );
   }
 
   @override
@@ -285,4 +304,8 @@ abstract class IMainScreenWidgetModel
 
   /// Метод, вызываемый в момент выбора валюты зачисления для конвертации
   void onSelectCredit(CurrencyDto currency);
+
+  void openSelectDebitModalSheet();
+
+  void openSelectCreditModalSheet();
 }
