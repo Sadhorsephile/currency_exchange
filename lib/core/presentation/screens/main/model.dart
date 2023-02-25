@@ -1,8 +1,12 @@
 import 'package:currency_exchange/core/domain/entities/currency.dart';
+import 'package:currency_exchange/core/interactor/get_exchange_rates.dart';
+import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
 import 'package:elementary/elementary.dart';
 
 /// Модель главного экрана
 class MainScreenModel extends ElementaryModel {
+  final CurrenciesUseCases _currenciesUseCases;
+
   CurrencyDto get debit => _currentDebitCurrency;
   CurrencyDto get credit => _currentCreditCurrency;
   List<CurrencyDto> get currencies => _currencies;
@@ -12,14 +16,15 @@ class MainScreenModel extends ElementaryModel {
 
   var _currencies = <CurrencyDto>[];
 
-  MainScreenModel(ErrorHandler errorHandler)
-      : super(errorHandler: errorHandler);
+  MainScreenModel(
+    this._currenciesUseCases,
+    ErrorHandler errorHandler,
+  ) : super(errorHandler: errorHandler);
 
   @override
   void init() {
-    // TODO: брать из интерактора
-    _currentDebitCurrency = _getInitialDebit();
-    _currentCreditCurrency = _getInitialCredit();
+    _currentDebitCurrency = _currenciesUseCases.prepopulatedDebit;
+    _currentCreditCurrency = _currenciesUseCases.prepopulatedCredit;
   }
 
   /// Метод загрузки данных для wm.
@@ -29,10 +34,12 @@ class MainScreenModel extends ElementaryModel {
   /// Обновляет содержимое полей [debit], [credit] и [currencies].
   Future<void> loadData() async {
     try {
-      // TODO: грузить данные из интерактора
-      _currencies = _mockCurrencies;
-      _currentDebitCurrency = _rub;
-      _currentCreditCurrency = _usd;
+      final data = await _currenciesUseCases
+          .getDebitToCreditCurrencies(_currentDebitCurrency.code);
+      _currencies = data.allCurrencies;
+      _currentDebitCurrency = data.debitCurrency;
+      _currentCreditCurrency =
+          data.allCurrencies.getByCode(_currentCreditCurrency.code);
     } on Exception catch (e) {
       handleError(e);
       rethrow;
@@ -61,48 +68,4 @@ class MainScreenModel extends ElementaryModel {
   double fromCreditToDebit(double credit) {
     return credit / _currentDebitCurrency[_currentCreditCurrency];
   }
-
-  // TODO: вынести в интерактор
-  CurrencyDto _getInitialDebit() => _rub;
-  CurrencyDto _getInitialCredit() => _usd;
 }
-
-const _rubCode = 'RUB';
-const _usdCode = 'USD';
-const _eurCode = 'EUR';
-
-final _rub = CurrencyDto(
-  title: 'Rub',
-  symbol: '₽',
-  code: _rubCode,
-  codeToValueExchangeRates: {
-    _usdCode: 1 / 120,
-    _eurCode: 1 / 200,
-  },
-);
-
-final _usd = CurrencyDto(
-  title: 'Usd',
-  symbol: r'$',
-  code: _usdCode,
-  codeToValueExchangeRates: {
-    _rubCode: 120,
-    _eurCode: 120 / 200,
-  },
-);
-
-final _eur = CurrencyDto(
-  title: 'Eur',
-  symbol: '€',
-  code: _eurCode,
-  codeToValueExchangeRates: {
-    _rubCode: 200,
-    _usdCode: 200 / 120,
-  },
-);
-
-final _mockCurrencies = [
-  _rub,
-  _usd,
-  _eur,
-];
