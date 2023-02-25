@@ -1,9 +1,11 @@
-
+import 'package:currency_exchange/core/data/network/client.dart';
+import 'package:currency_exchange/core/data/network/service/get_exchange_rates.dart';
 import 'package:currency_exchange/core/data/repository/currency.dart';
 import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/core/interactor/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ext.dart';
+import 'package:currency_exchange/core/presentation/screens/main/modal.dart';
 import 'package:currency_exchange/core/presentation/screens/main/model.dart';
 import 'package:currency_exchange/core/presentation/screens/main/ui.dart';
 import 'package:currency_exchange/core/presentation/screens/main/utils.dart';
@@ -12,12 +14,19 @@ import 'package:elementary/elementary.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 /// Фабрика виджет-модели главного экрана
 IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
     MainScreenWidgetModel(
       MainScreenModel(
-        CurrenciesUseCasesImpl(CurrencyRepositoryImpl()),
+        CurrenciesUseCasesImpl(
+          CurrencyRepositoryImpl(
+            GetExchangeRatesApiImpl(
+              Provider.of<NetworkClient>(_, listen: false),
+            ),
+          ),
+        ),
         MainScreenErrorHandler(),
       ),
       TextEditingController(),
@@ -102,6 +111,24 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   @override
   void onRetryPressed() {
     _init();
+  }
+
+  @override
+  void openSelectCreditModalSheet() {
+    SelectCurrencyModalBottomSheet.show(
+      context,
+      currencies,
+      onSelectCredit,
+    );
+  }
+
+  @override
+  void openSelectDebitModalSheet() {
+    SelectCurrencyModalBottomSheet.show(
+      context,
+      currencies,
+      onSelectDebit,
+    );
   }
 
   @override
@@ -277,4 +304,8 @@ abstract class IMainScreenWidgetModel
 
   /// Метод, вызываемый в момент выбора валюты зачисления для конвертации
   void onSelectCredit(CurrencyDto currency);
+
+  void openSelectDebitModalSheet();
+
+  void openSelectCreditModalSheet();
 }

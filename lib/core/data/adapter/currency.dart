@@ -3,7 +3,7 @@ import 'package:currency_exchange/resources/currencies.dart';
 
 /// Адаптер из [CurrencyStaticInfo] в [CurrencyDto]
 extension CurrencyDtoAdapter on CurrencyStaticInfo {
-  CurrencyDto toCurrencyDto(Map<String, double> exchangeRates) => CurrencyDto(
+  CurrencyDto toCurrencyDto(Map<String, num> exchangeRates) => CurrencyDto(
         code: abbreviation,
         title: currency,
         symbol: symbol,
