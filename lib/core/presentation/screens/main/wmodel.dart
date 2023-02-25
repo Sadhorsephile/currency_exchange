@@ -1,3 +1,5 @@
+
+import 'package:currency_exchange/core/data/repository/currency.dart';
 import 'package:currency_exchange/core/domain/entities/currency.dart';
 import 'package:currency_exchange/core/interactor/get_exchange_rates.dart';
 import 'package:currency_exchange/core/presentation/screens/main/error_handler.dart';
@@ -15,7 +17,7 @@ import 'package:flutter/services.dart';
 IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
     MainScreenWidgetModel(
       MainScreenModel(
-        CurrenciesUseCasesImpl(),
+        CurrenciesUseCasesImpl(CurrencyRepositoryImpl()),
         MainScreenErrorHandler(),
       ),
       TextEditingController(),

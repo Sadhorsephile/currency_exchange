@@ -1,7 +1,9 @@
+import 'package:currency_exchange/core/data/repository/currency.dart';
 import 'package:currency_exchange/core/domain/entities/currency.dart';
 
 /// Класс, представляющий набор интеракторов для получения данных о валюте
 abstract class CurrenciesUseCases {
+  /// Возвращает изначальную валюту списания
   CurrencyDto get prepopulatedDebit;
 
   /// Возвращает изначальную валюту зачисления
@@ -9,63 +11,26 @@ abstract class CurrenciesUseCases {
 
   /// Возвращает основную валюту [CurrencyDto], имеющую [CurrencyDto.code] = [code] и список валют,
   /// к которым основная валюта имеет определенная отношение
-  Future<DebitToCreditCurrenciesContainer> getDebitToCreditCurrencies(
+  Future<DebitToCreditCurrenciesDto> getDebitToCreditCurrencies(
     String code,
   );
 }
 
 class CurrenciesUseCasesImpl implements CurrenciesUseCases {
-  @override
-  CurrencyDto get prepopulatedCredit => CurrencyDto.fromCode(_usdCode);
+  final CurrencyRepository _currencyRepository;
 
   @override
-  CurrencyDto get prepopulatedDebit => CurrencyDto.fromCode(_rubCode);
+  CurrencyDto get prepopulatedCredit => _currencyRepository.prepopulatedCredit;
 
   @override
-  Future<DebitToCreditCurrenciesContainer> getDebitToCreditCurrencies(
+  CurrencyDto get prepopulatedDebit => _currencyRepository.prepopulatedDebit;
+
+  CurrenciesUseCasesImpl(this._currencyRepository);
+
+  @override
+  Future<DebitToCreditCurrenciesDto> getDebitToCreditCurrencies(
     String code,
   ) async {
-    await Future<void>.delayed(const Duration(seconds: 2));
-    return DebitToCreditCurrenciesContainer(_rub, _mockCurrencies);
+    return _currencyRepository.getDebitToCreditCurrencies(code);
   }
 }
-
-const _rubCode = 'RUB';
-const _usdCode = 'USD';
-const _eurCode = 'EUR';
-
-final _rub = CurrencyDto(
-  title: 'Rub',
-  symbol: '₽',
-  code: _rubCode,
-  codeToValueExchangeRates: {
-    _usdCode: 1 / 120,
-    _eurCode: 1 / 200,
-  },
-);
-
-final _usd = CurrencyDto(
-  title: 'Usd',
-  symbol: r'$',
-  code: _usdCode,
-  codeToValueExchangeRates: {
-    _rubCode: 120,
-    _eurCode: 120 / 200,
-  },
-);
-
-final _eur = CurrencyDto(
-  title: 'Eur',
-  symbol: '€',
-  code: _eurCode,
-  codeToValueExchangeRates: {
-    _rubCode: 200,
-    _usdCode: 200 / 120,
-  },
-);
-
-final _mockCurrencies = [
-  _rub,
-  _usd,
-  _eur,
-];

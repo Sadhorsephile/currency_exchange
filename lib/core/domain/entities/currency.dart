@@ -26,10 +26,12 @@ class CurrencyDto {
         codeToValueExchangeRates: {},
       );
 
-  factory CurrencyDto.fromCode(String code) => CurrencyDto(
+  /// Фабрика для создания валюты из кода
+  factory CurrencyDto.fromCodeAndSymbol(String code, String symbol) =>
+      CurrencyDto(
         code: code,
         title: '',
-        symbol: '',
+        symbol: symbol,
         codeToValueExchangeRates: {},
       );
 
@@ -43,13 +45,12 @@ class CurrencyDto {
 
 /// Дата-класс, содержащий в себе основную валюту и список валют,
 /// к которым она имеет определенное отношение
-class DebitToCreditCurrenciesContainer {
+class DebitToCreditCurrenciesDto {
   final CurrencyDto debitCurrency;
   final List<CurrencyDto> creditCurrencies;
-  late final List<CurrencyDto> allCurrencies; 
+  late final List<CurrencyDto> allCurrencies;
 
-
-  DebitToCreditCurrenciesContainer(this.debitCurrency, this.creditCurrencies) {
+  DebitToCreditCurrenciesDto(this.debitCurrency, this.creditCurrencies) {
     allCurrencies = [debitCurrency, ...creditCurrencies];
   }
 }
