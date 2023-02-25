@@ -119,7 +119,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   @override
-  void openSelectDebitModalSheet() {
+  void openSelectCreditModalSheet() {
     SelectCurrencyModalBottomSheet.show(
       context,
       currencies,
@@ -128,7 +128,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   }
 
   @override
-  void openSelectCreditModalSheet() {
+  void openSelectDebitModalSheet() {
     SelectCurrencyModalBottomSheet.show(
       context,
       currencies,
@@ -249,8 +249,20 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   /// Метод, отображающий снек-бар с предупреждением
   void _onSameCurrenciesSelect() {
-    _snackBarMessenger
-        .showSnackBar(AppDictionary.mainScreenSameCurrenciesSelectedWarning);
+    _showSnackBarMessage(AppDictionary.mainScreenSameCurrenciesSelectedWarning);
+  }
+
+  /// Метод, отображающий снек-бар с сообщением [message]
+  Future<void> _showSnackBarMessage(String message) async {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+          ),
+        );
+      },
+    );
   }
 }
 
