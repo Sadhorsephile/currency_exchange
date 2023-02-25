@@ -216,7 +216,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   /// Метод, отображающий снек-бар с сообщением [message]
   Future<void> _showSnackBarMessage(String message) async {
-    WidgetsBinding.instance!.addPostFrameCallback(
+    WidgetsBinding.instance.addPostFrameCallback(
       (_) {
         _scaffoldMessenger.showSnackBar(
           SnackBar(
