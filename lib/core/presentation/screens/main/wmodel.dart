@@ -120,6 +120,8 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void openSelectCreditModalSheet() {
+    FocusScope.of(context).unfocus();
+
     SelectCurrencyModalBottomSheet.show(
       context,
       currencies,
@@ -129,6 +131,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void openSelectDebitModalSheet() {
+    FocusScope.of(context).unfocus();
     SelectCurrencyModalBottomSheet.show(
       context,
       currencies,

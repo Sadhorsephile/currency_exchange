@@ -29,8 +29,8 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
 
   @override
   CurrencyDto get prepopulatedDebit => CurrencyDto.fromCodeAndSymbol(
-        _rubCode,
-        CurrenciesStaticInfo.list.getSymbolByCode(_rubCode),
+        _eurCode,
+        CurrenciesStaticInfo.list.getSymbolByCode(_eurCode),
       );
 
   CurrencyRepositoryImpl(this._getExchangeRatesApi);
@@ -53,5 +53,5 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
   }
 }
 
-const _rubCode = 'EUR';
+const _eurCode = 'EUR';
 const _usdCode = 'USD';
