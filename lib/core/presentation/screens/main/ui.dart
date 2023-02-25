@@ -18,7 +18,7 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
       hint: wm.debitHint,
       inputFormatter: wm.inputFormatter,
       onRefreshIconPressed: wm.onRetryPressed,
-      onBtnPressed: wm.openSelectDebitModalSheet,
+      onSelectCurrencyBtnPressed: wm.openSelectDebitModalSheet,
     );
 
     final credit = _CurrencyTextBox(
@@ -26,7 +26,7 @@ class MainScreen extends ElementaryWidget<IMainScreenWidgetModel> {
       hint: wm.creditHint,
       inputFormatter: wm.inputFormatter,
       onRefreshIconPressed: wm.onRetryPressed,
-      onBtnPressed: wm.openSelectCreditModalSheet,
+      onSelectCurrencyBtnPressed: wm.openSelectCreditModalSheet,
     );
 
     return OrientationBuilder(
@@ -72,7 +72,7 @@ class _CurrencyTextBox extends StatelessWidget {
   final ListenableState<EntityState<CurrencyTextFieldDto>> textFieldState;
   final TextInputFormatter inputFormatter;
   final VoidCallback onRefreshIconPressed;
-  final VoidCallback onBtnPressed;
+  final VoidCallback onSelectCurrencyBtnPressed;
   final String hint;
 
   const _CurrencyTextBox({
@@ -80,7 +80,7 @@ class _CurrencyTextBox extends StatelessWidget {
     required this.hint,
     required this.inputFormatter,
     required this.onRefreshIconPressed,
-    required this.onBtnPressed,
+    required this.onSelectCurrencyBtnPressed,
     Key? key,
   }) : super(key: key);
 
@@ -93,15 +93,15 @@ class _CurrencyTextBox extends StatelessWidget {
         state: state,
         inputFormatter: inputFormatter,
         hint: hint,
-        onBtnPressed: onBtnPressed,
+        onSelectCurrencyBtnPressed: onSelectCurrencyBtnPressed,
       ),
       errorBuilder: (_, ex, state) => _CurrencyTextBoxContent.error(
         state: state,
         inputFormatter: inputFormatter,
         hint: hint,
         errorMessage: ex.asUserError,
-        onBtnPressed: onBtnPressed,
         onRefreshIconPressed: onRefreshIconPressed,
+        onSelectCurrencyBtnPressed: onSelectCurrencyBtnPressed,
       ),
     );
   }
@@ -114,33 +114,33 @@ class _CurrencyTextBoxContent extends StatelessWidget {
   final TextInputFormatter? inputFormatter;
   final String? hint;
   final String? errorMessage;
-  final VoidCallback? onBtnPressed;
   final VoidCallback? onRefreshIconPressed;
+  final VoidCallback? onSelectCurrencyBtnPressed;
 
   const _CurrencyTextBoxContent({
     required this.isLoading,
-    this.onBtnPressed,
     this.inputFormatter,
     this.onRefreshIconPressed,
+    this.onSelectCurrencyBtnPressed,
     this.hint,
     this.errorMessage,
     Key? key,
     this.state,
-  })  : assert(isLoading || onBtnPressed != null),
+  })  : assert(isLoading || onSelectCurrencyBtnPressed != null),
         super(key: key);
 
   /// Текстовое поле с валютой, доступное для редактирования
   factory _CurrencyTextBoxContent.data({
     required TextInputFormatter inputFormatter,
-    required VoidCallback onBtnPressed,
+    required VoidCallback onSelectCurrencyBtnPressed,
     CurrencyTextFieldDto? state,
     String? hint,
   }) =>
       _CurrencyTextBoxContent(
         isLoading: false,
         state: state,
+        onSelectCurrencyBtnPressed: onSelectCurrencyBtnPressed,
         hint: hint,
-        onBtnPressed: onBtnPressed,
         inputFormatter: inputFormatter,
       );
 
@@ -153,7 +153,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
     required TextInputFormatter inputFormatter,
     required String errorMessage,
     required VoidCallback onRefreshIconPressed,
-    required VoidCallback onBtnPressed,
+    required VoidCallback onSelectCurrencyBtnPressed,
     CurrencyTextFieldDto? state,
     String? hint,
   }) =>
@@ -161,7 +161,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
         isLoading: false,
         state: state,
         hint: hint,
-        onBtnPressed: onBtnPressed,
+        onSelectCurrencyBtnPressed: onSelectCurrencyBtnPressed,
         inputFormatter: inputFormatter,
         errorMessage: errorMessage,
         onRefreshIconPressed: onRefreshIconPressed,
@@ -175,7 +175,7 @@ class _CurrencyTextBoxContent extends StatelessWidget {
             padding: const EdgeInsets.all(5),
             child: _RoundCurrencyButton(
               label: state!.currencySymbol,
-              onPressed: onBtnPressed!,
+              onPressed: onSelectCurrencyBtnPressed!,
             ),
           );
 

@@ -1,3 +1,4 @@
+import 'package:currency_exchange/common/utils/snackbar_messenger.dart';
 import 'package:currency_exchange/core/data/network/client.dart';
 import 'package:currency_exchange/core/data/network/service/get_exchange_rates.dart';
 import 'package:currency_exchange/core/data/repository/currency.dart';
@@ -31,7 +32,7 @@ IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
       ),
       TextEditingController(),
       TextEditingController(),
-      ScaffoldMessenger.of(_),
+      SnackBarMessengerImpl(_),
     );
 
 /// Виджет-модель главного экрана
@@ -39,10 +40,10 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   /// Контроллер текстового поля списания
   final TextEditingController _debitController;
 
+  final SnackBarMessenger _snackBarMessenger;
+
   /// Контроллер текстового поля зачисления
   final TextEditingController _creditController;
-
-  final ScaffoldMessengerState _scaffoldMessenger;
 
   final _debitStateNotifier = EntityStateNotifier<CurrencyTextFieldDto>();
   final _creditStateNotifier = EntityStateNotifier<CurrencyTextFieldDto>();
@@ -82,7 +83,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
     MainScreenModel model,
     this._debitController,
     this._creditController,
-    this._scaffoldMessenger,
+    this._snackBarMessenger,
   ) : super(model);
 
   @override
@@ -105,7 +106,11 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void onErrorHandle(Object error) {
-    _showSnackBarMessage(AppDictionary.mainScreenUnexpectedError);
+    _snackBarMessenger.showSnackBar(
+      error is Exception
+          ? error.asUserError
+          : AppDictionary.mainScreenUnexpectedError,
+    );
   }
 
   @override
@@ -251,7 +256,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
   Future<void> _showSnackBarMessage(String message) async {
     WidgetsBinding.instance.addPostFrameCallback(
       (_) {
-        _scaffoldMessenger.showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
           ),
@@ -299,13 +304,13 @@ abstract class IMainScreenWidgetModel
   /// Метод, инициирующий перезагрузку данных на странице
   void onRetryPressed();
 
+  void openSelectDebitModalSheet();
+
+  void openSelectCreditModalSheet();
+
   /// Метод, вызываемый в момент выбора валюты списания для конвертации
   void onSelectDebit(CurrencyDto currency);
 
   /// Метод, вызываемый в момент выбора валюты зачисления для конвертации
   void onSelectCredit(CurrencyDto currency);
-
-  void openSelectDebitModalSheet();
-
-  void openSelectCreditModalSheet();
 }
