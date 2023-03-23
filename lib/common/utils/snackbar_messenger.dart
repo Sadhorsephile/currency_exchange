@@ -16,7 +16,7 @@ class SnackBarMessengerImpl implements SnackBarMessenger {
   void showSnackBar(String text) {
     assert(ScaffoldMessenger.maybeOf(context) != null);
 
-    WidgetsBinding.instance?.addPostFrameCallback(
+    WidgetsBinding.instance.addPostFrameCallback(
       (_) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(text)));

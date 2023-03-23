@@ -15,7 +15,7 @@ extension SymbolByCodeRetriever on List<CurrencyStaticInfo> {
 class CurrenciesStaticInfo {
   static const _assetPath = 'assets/json/currencies.json';
 
-  static late final List<CurrencyStaticInfo> list;
+  static late List<CurrencyStaticInfo> list;
 
   /// Метод, инициирующий загрузку данных из json-ассета. Должен вызываться перед стартом приложения
   static Future<void> loadFromJson() async {

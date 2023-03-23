@@ -1,5 +1,4 @@
 import 'package:currency_exchange/common/utils/snackbar_messenger.dart';
-import 'package:currency_exchange/core/data/network/client.dart';
 import 'package:currency_exchange/core/data/network/service/get_exchange_rates.dart';
 import 'package:currency_exchange/core/data/repository/currency.dart';
 import 'package:currency_exchange/core/domain/entities/currency.dart';
@@ -23,9 +22,7 @@ IMainScreenWidgetModel mainScreenWidgetModelFactory(BuildContext _) =>
       MainScreenModel(
         CurrenciesUseCasesImpl(
           CurrencyRepositoryImpl(
-            GetExchangeRatesApiImpl(
-              Provider.of<NetworkClient>(_, listen: false),
-            ),
+            Provider.of<GetExchangeRatesApi>(_, listen: false),
           ),
         ),
         MainScreenErrorHandler(),
@@ -120,6 +117,8 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void openSelectCreditModalSheet() {
+    FocusScope.of(context).unfocus();
+
     SelectCurrencyModalBottomSheet.show(
       context,
       currencies,
@@ -129,6 +128,7 @@ class MainScreenWidgetModel extends IMainScreenWidgetModel {
 
   @override
   void openSelectDebitModalSheet() {
+    FocusScope.of(context).unfocus();
     SelectCurrencyModalBottomSheet.show(
       context,
       currencies,
